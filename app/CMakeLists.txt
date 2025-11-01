@@ -6,10 +6,5 @@ add_executable(pacman
         game/main.cpp
 )
 
-target_link_libraries(pacman
-        PRIVATE
-        logic
-        sfml-graphics
-        sfml-window
-        sfml-system
+target_link_libraries(pacman PRIVATE logic sfml-graphics sfml-window sfml-system
 )
