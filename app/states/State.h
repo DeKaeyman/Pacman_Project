@@ -13,9 +13,9 @@ namespace pacman::app {
         explicit State(StateManager& m) : manager_(m) {} // Every state gets a reference to the StateManager
         virtual ~State() = default; // Virtual destructor needed
 
-        void handleEvent(const sf::Event&) {} // Basic behavior
-        void update(double /*dt*/) {} // Gets called per frame for animations/timers and so on
-        void draw(sf::RenderWindow& /*w*/) {} // Gets called to draw the state itself
+        virtual void handleEvent(const sf::Event&) {} // Basic behavior
+        virtual void update(double /*dt*/) {} // Gets called per frame for animations/timers and so on
+        virtual void draw(sf::RenderWindow& /*w*/) {} // Gets called to draw the state itself
 
     protected:
         // Help functions
