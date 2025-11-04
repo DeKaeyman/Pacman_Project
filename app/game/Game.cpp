@@ -9,8 +9,6 @@ namespace pacman::app {
         prepareStateManager(); // request the prepare statement
     }
 
-    Game::~Game() = default;
-
     void Game::prepareStateManager() {
         stateManager_ = std::make_unique<StateManager>(); // State manager manages which state is active
     }

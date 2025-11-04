@@ -8,6 +8,18 @@ add_executable(pacman
         states/StateManager.h
         game/Game.cpp
         game/Game.h
+        states/State.cpp
+        states/State.h
+        states/MenuState.cpp
+        states/MenuState.h
+        states/LevelState.cpp
+        states/LevelState.h
+        states/PausedState.cpp
+        states/PausedState.h
+        states/VictoryState.cpp
+        states/VictoryState.h
+        states/GameOverState.cpp
+        states/GameOverState.h
 )
 
 target_link_libraries(pacman PRIVATE logic sfml-graphics sfml-window sfml-system

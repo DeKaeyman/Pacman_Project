@@ -2,7 +2,7 @@
 * [x] Voeg namespaces toe (`pacman::logic`, `pacman::app`). 
 * [x] Definieer in `logic/` een **World** klasse (model/controller) die entiteiten beheert, update-t en botsingen detecteert (rect-intersectie, zonder SFML). Plan hier ook level-reset & level-advance. 
 * [x] Maak in `app/` een **Game** bootstrapper die enkel de SFML-window aanmaakt, loop draait en een **StateManager** voorbereidt (geen spelregels hier). Bestand: `app/Game.cpp`. 
-* [ ] Zet een **StateManager** met stack (MenuState → LevelState → Paused/Victory/GameOver). Elke state beslist eigen transities; StateManager kent concrete states niet. Bestanden: `app/states/*`. 
+* [x] Zet een **StateManager** met stack (MenuState → LevelState → Paused/Victory/GameOver). Elke state beslist eigen transities; StateManager kent concrete states niet. Bestanden: `app/states/*`. 
 * [ ] Voorzie in `app/` een **AbstractFactory** interface in `logic/` (publieke header) en een **ConcreteFactory** in `app/` die Views koppelt aan Models bij creatie van entiteiten. World krijgt enkel de abstracte factory. 
 * [ ] Introduceer **MVC**: elk logic-model heeft een view in `app/`. Updates lopen via Observer-events; View tekent, Model bevat geen SFML. Plaats Model in `logic/entities/`, View in `app/views/`. 
 * [ ] Bouw een **Stopwatch** als Singleton (C++ chrono, géén SFML Clock): levert `deltaTime` voor consistente snelheid/animaties. Header in `logic/utils/Stopwatch.hpp`. 
