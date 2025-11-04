@@ -4,6 +4,8 @@ add_library(logic STATIC
         utils/Stopwatch.h
         entities/Entity.cpp
         entities/Entity.h
+        world/World.cpp
+        world/World.h
 )
 
 # Publieke include-paden (zodat app headers uit logic kan includen)

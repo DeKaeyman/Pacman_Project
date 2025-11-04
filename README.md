@@ -1,6 +1,6 @@
 * [x] Maak een cleane projectstructuur met twee targets: **logic** (static/dynamic lib, geen SFML-dependentie) en **app** (SFML representatie). Mappen: `logic/` (world, entities, utils), `app/` (views, states, game), `assets/`, `cmake/`, `tests/`. Zet `CMakeLists.txt` zo dat `app` linkt tegen `logic`. 
 * [x] Voeg namespaces toe (`pacman::logic`, `pacman::app`). 
-* [ ] Definieer in `logic/` een **World** klasse (model/controller) die entiteiten beheert, update-t en botsingen detecteert (rect-intersectie, zonder SFML). Plan hier ook level-reset & level-advance. 
+* [x] Definieer in `logic/` een **World** klasse (model/controller) die entiteiten beheert, update-t en botsingen detecteert (rect-intersectie, zonder SFML). Plan hier ook level-reset & level-advance. 
 * [ ] Maak in `app/` een **Game** bootstrapper die enkel de SFML-window aanmaakt, loop draait en een **StateManager** voorbereidt (geen spelregels hier). Bestand: `app/Game.cpp`. 
 * [ ] Zet een **StateManager** met stack (MenuState → LevelState → Paused/Victory/GameOver). Elke state beslist eigen transities; StateManager kent concrete states niet. Bestanden: `app/states/*`. 
 * [ ] Voorzie in `app/` een **AbstractFactory** interface in `logic/` (publieke header) en een **ConcreteFactory** in `app/` die Views koppelt aan Models bij creatie van entiteiten. World krijgt enkel de abstracte factory. 

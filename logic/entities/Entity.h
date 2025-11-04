@@ -1,16 +1,28 @@
-//
-// Created by adria on 01/11/2025.
-//
+#pragma once
+#include <cstdint>
 
-#ifndef ENTITY_H
-#define ENTITY_H
+namespace pacman::logic {
 
+    struct Rect { // Axis aligned rectangle (AABB) for collision
+        float x{}, y{}, w{}, h{};
+    };
 
+    class Entity { // Entity represents the game objects (Pacman, Ghost, Wall, ...)
+    public:
+        using Id = std::uint32_t; // Unique identifier for entity recognition
+        virtual ~Entity() = default;
 
-class Entity {
+        Id id() const { return id_; } // Read identity of entity
+        void setId(Id id) { id_ = id; } // Set identity of entity
 
-};
+        virtual Rect bounds() const = 0; // Axis aligned bounding box of this entity
 
+        virtual void update(double dt) = 0;
 
+        bool active{true}; // false => Entity will be ignored
+        bool solid{true}; // false => can be phased trough
 
-#endif //ENTITY_H
+    private:
+        Id id_{0}; // 0 as invalid, changes when created in world
+    };
+}
