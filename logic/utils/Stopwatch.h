@@ -1,6 +1,6 @@
 #pragma once
 
-namespace pac::logic {
+namespace pacman::logic {
 
     class Stopwatch {
     public:

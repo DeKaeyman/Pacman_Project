@@ -2,6 +2,11 @@
 #include "../states/StateManager.h"
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics.hpp>
+#include "../states/MenuState.h"
+#include "../states/LevelState.h"
+#include "../states/PausedState.h"
+#include "../states/VictoryState.h"
+#include "../states/GameOverState.h"
 
 namespace pacman::app {
 
@@ -11,6 +16,14 @@ namespace pacman::app {
 
     void Game::prepareStateManager() {
         stateManager_ = std::make_unique<StateManager>(); // State manager manages which state is active
+
+        stateManager_->registerFactory("menu", [](StateManager& m){ return std::make_unique<MenuState>(m); });
+        stateManager_->registerFactory("level", [](StateManager& m){ return std::make_unique<LevelState>(m); });
+        stateManager_->registerFactory("paused", [](StateManager& m){ return std::make_unique<PausedState>(m); });
+        stateManager_->registerFactory("victory", [](StateManager& m){ return std::make_unique<VictoryState>(m); });
+        stateManager_->registerFactory("gameover", [](StateManager& m){ return std::make_unique<GameOverState>(m); });
+
+        stateManager_->push("menu");
     }
 
     void Game::run() {
