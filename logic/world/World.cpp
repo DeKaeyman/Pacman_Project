@@ -4,8 +4,6 @@
 
 namespace pacman::logic {
 
-    World::World() = default;
-
     World::EntityId World::addEntity(EntityPtr e) {
         e->setId(nextId_++); // Gives unique id to the entity
         EntityId id = e->id(); // Take a snapshot of the id
