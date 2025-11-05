@@ -22,6 +22,8 @@ add_executable(pacman
         states/GameOverState.h
         factory/ConcreteFactory.h
         factory/ConcreteFactory.cpp
+        views/View.h
+        views/ViewRegistry.h
 )
 
 target_link_libraries(pacman PRIVATE logic sfml-graphics sfml-window sfml-system

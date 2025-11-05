@@ -7,6 +7,9 @@ add_library(logic STATIC
         world/World.cpp
         world/World.h
         factory/AbstractFactory.h
+        observer/Event.h
+        observer/Observer.h
+        observer/Subject.h
 )
 
 # Publieke include-paden (zodat app headers uit logic kan includen)

@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include "factory/AbstractFactory.h"
+#include "../views/ViewRegistry.h"
 
 namespace sf { class RenderWindow; } // Forward declare SFML window to avoid heavy include
 
@@ -17,8 +18,11 @@ namespace pacman::app {
         std::shared_ptr<logic::Fruit> createFruit() override; // Creates Fruit model and attaches its view
         std::shared_ptr<logic::Wall> createWall() override; // Creates Wall model and attaches its view
 
+        ViewRegistry& views() noexcept { return views_; } // Expose view registry for drawing in the app loop
+
     private:
         sf::RenderWindow* window_; // Pointer to render window
+        ViewRegistry views_; // Central store of all views created by this factory
 
         void attachViewToModel(const std::shared_ptr<logic::PacMan>& /*model*/); // Links PacMan model to its visual representation
         void attachViewToModel(const std::shared_ptr<logic::Ghost>& /*model*/); // Links Ghost model to its visual representation
