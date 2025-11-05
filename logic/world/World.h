@@ -3,6 +3,7 @@
 #include <memory>
 #include <functional>
 #include "../entities/Entity.h"
+#include "factory/AbstractFactory.h"
 
 namespace pacman::logic {
 
@@ -17,7 +18,7 @@ namespace pacman::logic {
         using EntityPtr = std::unique_ptr<Entity>; // World is owner of all entities
         using EntityId = Entity::Id;
 
-        World();
+        explicit World(AbstractFactory& factory) : factory_{&factory} {};
 
         EntityId addEntity(EntityPtr e); // Registers entity and returns id
         bool removeEntity(EntityId id); // removes entity based on id
@@ -39,6 +40,7 @@ namespace pacman::logic {
         const std::vector<EntityPtr>& entities() const { return entities_; } // For iterating entities
 
     private:
+        AbstractFactory* factory_;
         std::vector<EntityPtr> entities_; // All entities
         std::vector<std::pair<EntityId, EntityId>> lastCollisions_; // Collisions of last frame
 
@@ -46,5 +48,4 @@ namespace pacman::logic {
         int currentLevel_{1};
         EntityId nextId_{1}; // Counter of unique id's
     };
-
 }
