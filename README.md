@@ -4,7 +4,7 @@
 * [x] Maak in `app/` een **Game** bootstrapper die enkel de SFML-window aanmaakt, loop draait en een **StateManager** voorbereidt (geen spelregels hier). Bestand: `app/Game.cpp`. 
 * [x] Zet een **StateManager** met stack (MenuState → LevelState → Paused/Victory/GameOver). Elke state beslist eigen transities; StateManager kent concrete states niet. Bestanden: `app/states/*`. 
 * [x] Voorzie in `app/` een **AbstractFactory** interface in `logic/` (publieke header) en een **ConcreteFactory** in `app/` die Views koppelt aan Models bij creatie van entiteiten. World krijgt enkel de abstracte factory. 
-* [ ] Introduceer **MVC**: elk logic-model heeft een view in `app/`. Updates lopen via Observer-events; View tekent, Model bevat geen SFML. Plaats Model in `logic/entities/`, View in `app/views/`. 
+* [x] Introduceer **MVC**: elk logic-model heeft een view in `app/`. Updates lopen via Observer-events; View tekent, Model bevat geen SFML. Plaats Model in `logic/entities/`, View in `app/views/`. 
 * [ ] Bouw een **Stopwatch** als Singleton (C++ chrono, géén SFML Clock): levert `deltaTime` voor consistente snelheid/animaties. Header in `logic/utils/Stopwatch.hpp`. 
 * [ ] Bouw een **Random** als Singleton (Mersenne Twister + distributions). Gebruik één generator-instantie; geen `rand/srand`. Bestand: `logic/utils/Random.hpp`. 
 * [ ] Definieer in `logic/camera/Camera.hpp` een projectie: wereldcoördinaten in [-1,1] × [-1,1] naar pixels. Gebruik dit in Views om spriteposities en groottes af te leiden. 
