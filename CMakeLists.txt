@@ -7,3 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Subprojects
 add_subdirectory(logic)
 add_subdirectory(app)
+
+enable_testing()
+add_subdirectory(tests)
