@@ -6,7 +6,7 @@
 * [x] Voorzie in `app/` een **AbstractFactory** interface in `logic/` (publieke header) en een **ConcreteFactory** in `app/` die Views koppelt aan Models bij creatie van entiteiten. World krijgt enkel de abstracte factory. 
 * [x] Introduceer **MVC**: elk logic-model heeft een view in `app/`. Updates lopen via Observer-events; View tekent, Model bevat geen SFML. Plaats Model in `logic/entities/`, View in `app/views/`. 
 * [x] Bouw een **Stopwatch** als Singleton (C++ chrono, géén SFML Clock): levert `deltaTime` voor consistente snelheid/animaties. Header in `logic/utils/Stopwatch.hpp`. 
-* [ ] Bouw een **Random** als Singleton (Mersenne Twister + distributions). Gebruik één generator-instantie; geen `rand/srand`. Bestand: `logic/utils/Random.hpp`. 
+* [x] Bouw een **Random** als Singleton (Mersenne Twister + distributions). Gebruik één generator-instantie; geen `rand/srand`. Bestand: `logic/utils/Random.hpp`. 
 * [ ] Definieer in `logic/camera/Camera.hpp` een projectie: wereldcoördinaten in [-1,1] × [-1,1] naar pixels. Gebruik dit in Views om spriteposities en groottes af te leiden. 
 * [ ] Start **MenuState** (app): tekent titel, top-5 highscores, en “Play” knop. Interactie: muisklik/Enter → push LevelState. Bestand: `app/states/MenuState.cpp`. 
 * [ ] Leg highscore-bestanden vast (pad in `assets/data/highscores.txt`). Score klasse in `logic/score/Score.hpp` beheert score en persistente top-5. MenuState leest en toont. 
