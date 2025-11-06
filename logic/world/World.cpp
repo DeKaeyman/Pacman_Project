@@ -29,8 +29,8 @@ namespace pacman::logic {
     }
 
     void World::update(double dt) {
-        for (auto& p : entities_) { // Update all active entities
-            if (p && p->active) p->update(dt);
+        for (auto& e : entities_) { // Update all active entities
+            if (e && e->active) e->update(dt);
         }
 
         lastCollisions_.clear(); // Calculate all pairs of entities that overlap after update

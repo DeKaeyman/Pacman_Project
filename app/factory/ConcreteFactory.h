@@ -24,10 +24,10 @@ namespace pacman::app {
         sf::RenderWindow* window_; // Pointer to render window
         ViewRegistry views_; // Central store of all views created by this factory
 
-        void attachViewToModel(const std::shared_ptr<logic::PacMan>& /*model*/); // Links PacMan model to its visual representation
-        void attachViewToModel(const std::shared_ptr<logic::Ghost>& /*model*/); // Links Ghost model to its visual representation
-        void attachViewToModel(const std::shared_ptr<logic::Coin>& /*model*/); // Links Coin model to its visual representation
-        void attachViewToModel(const std::shared_ptr<logic::Fruit>& /*model*/); // Links Fruit model to its visual representation
-        void attachViewToModel(const std::shared_ptr<logic::Wall>& /*model*/); // Links Wall model to its visual representation
+        void attachViewToModel(const std::shared_ptr<logic::PacMan>&); // Links PacMan model to its visual representation
+        void attachViewToModel(const std::shared_ptr<logic::Ghost>&); // Links Ghost model to its visual representation
+        void attachViewToModel(const std::shared_ptr<logic::Coin>&); // Links Coin model to its visual representation
+        void attachViewToModel(const std::shared_ptr<logic::Fruit>&); // Links Fruit model to its visual representation
+        void attachViewToModel(const std::shared_ptr<logic::Wall>&); // Links Wall model to its visual representation
     };
 }

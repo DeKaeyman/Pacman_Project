@@ -28,7 +28,13 @@ namespace pacman::logic {
         const Entity* get(EntityId id) const;
 
         void update(double dt); // Ticks all entities and calculates possible collisions
-        const std::vector<std::pair<EntityId, EntityId>>& collisions() const { return lastCollisions_; } // exports all collisions from last update moment
+
+        template <typename F>
+        void forEachEntity(F&& f) {
+            for (auto& p : entities_) if (p && p->active) f(*p);
+        }
+
+        const std::vector<std::pair<EntityId, EntityId>>& lastCollisions() const { return lastCollisions_; } // exports all collisions from last update moment
 
         // Level flow
         void resetLevel(); // reset to startstate
@@ -40,7 +46,7 @@ namespace pacman::logic {
         const std::vector<EntityPtr>& entities() const { return entities_; } // For iterating entities
 
     private:
-        AbstractFactory* factory_;
+        AbstractFactory* factory_{nullptr};
         std::vector<EntityPtr> entities_; // All entities
         std::vector<std::pair<EntityId, EntityId>> lastCollisions_; // Collisions of last frame
 

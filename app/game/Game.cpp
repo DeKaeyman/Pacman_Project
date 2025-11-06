@@ -7,11 +7,13 @@
 #include "../states/PausedState.h"
 #include "../states/VictoryState.h"
 #include "../states/GameOverState.h"
+#include "utils/Stopwatch.h"
 
 namespace pacman::app {
 
     Game::Game(unsigned width, unsigned height, const char *title) : window_(sf::VideoMode(width, height), title) {
         prepareStateManager(); // request the prepare statement
+        pacman::logic::Stopwatch::getInstance().reset();
     }
 
     void Game::prepareStateManager() {
@@ -27,7 +29,15 @@ namespace pacman::app {
     }
 
     void Game::run() {
+        auto& clock = pacman::logic::Stopwatch::getInstance();
+
         while (window_.isOpen()) { // Main loop of the window
+
+            clock.tick();
+            double dt = clock.deltaTime();
+
+            if (dt > 0.066) dt = 0.066;
+
             sf::Event e{};
             while (window_.pollEvent(e)) { // Process all system events
                 if (e.type == sf::Event::Closed) window_.close();
