@@ -2,6 +2,7 @@
 #include <memory>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include "observer/Observer.h"
+#include "camera/Camera.h"
 
 namespace pacman::app {
 
@@ -12,5 +13,10 @@ namespace pacman::app {
         virtual void draw(sf::RenderWindow& window) = 0; // Render this view into the given SFML window
 
         void onEvent(const pacman::logic::Event& /*e*/) override {}
+
+        static void setCamera(pacman::logic::Camera* cam) noexcept { camera_ = cam; } // Hook to give the shared Camera instance to all views
+
+    protected:
+        inline static pacman::logic::Camera* camera_ = nullptr;
     };
 }

@@ -2,6 +2,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <memory>
 #include "../states/StateManager.h"
+#include "camera/Camera.h"
 
 namespace pacman::app {
 
@@ -15,6 +16,7 @@ namespace pacman::app {
 
     private:
         sf::RenderWindow window_; // The SFML window that displays the game
+        pacman::logic::Camera camera_; // Logical camera bound to this window
         std::unique_ptr<StateManager> stateManager_; // Points to the active screen
     };
 }
