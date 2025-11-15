@@ -12,6 +12,8 @@ add_library(logic STATIC
         observer/Subject.h
         camera/Camera.cpp
         camera/Camera.h
+        utils/Random.cpp
+        utils/Random.h
         score/Score.cpp
         score/Score.h
 )

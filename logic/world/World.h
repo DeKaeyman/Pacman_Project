@@ -4,6 +4,7 @@
 #include <functional>
 #include "../entities/Entity.h"
 #include "factory/AbstractFactory.h"
+#include "TileMap.h"
 
 namespace pacman::logic {
 
@@ -45,6 +46,9 @@ namespace pacman::logic {
 
         const std::vector<EntityPtr>& entities() const { return entities_; } // For iterating entities
 
+        void loadLevel(const TileMap& map); // Load a new level layout into the world.
+        const TileMap& tileMap() const noexcept { return tileMap_; } // Access the current tile map for read only queries
+
     private:
         AbstractFactory* factory_{nullptr};
         std::vector<EntityPtr> entities_; // All entities
@@ -53,5 +57,7 @@ namespace pacman::logic {
         std::vector<EntityPtr> levelTemplate_; // Start state to later reset to
         int currentLevel_{1};
         EntityId nextId_{1}; // Counter of unique id's
+
+        TileMap tileMap_{};
     };
 }

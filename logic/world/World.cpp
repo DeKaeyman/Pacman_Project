@@ -68,4 +68,8 @@ namespace pacman::logic {
         currentLevel_++;
         resetLevel(); // Start new level
     }
+
+    void World::loadLevel(const pacman::logic::TileMap &map) {
+        tileMap_ = map;
+    }
 }
