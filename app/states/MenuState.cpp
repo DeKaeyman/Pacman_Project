@@ -5,6 +5,10 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
 
+#include "score/Score.h"
+#include <sstream>
+#include <iomanip>
+
 namespace pacman::app {
 
     namespace {
@@ -14,6 +18,7 @@ namespace pacman::app {
 
     MenuState::MenuState(pacman::app::StateManager &m) : State(m) { // Constructor, forwards StateManager to base class
         font_.loadFromFile("assets/fonts/arial.ttf"); // Load a font for displaying text
+        highscores_ = pacman::logic::Score::loadHighscores(highscorePath_); // Load top 5 highscores from logic layer
     }
 
     void MenuState::handleEvent(const sf::Event& e) {
@@ -65,18 +70,22 @@ namespace pacman::app {
 
         w.draw(title); // Draw the title on the screen
 
-        const char* lines[5] = { // Placeholder top 5 score lines
-                "1. 00000",
-                "2. 00000",
-                "3. 00000",
-                "4. 00000",
-                "5. 00000"
-        };
-
         sf::Text scoreText;
         scoreText.setFont(font_);
         scoreText.setCharacterSize(24);
         scoreText.setFillColor(sf::Color::White);
+
+        std::vector<std::string> lines; // Hold formated style strings
+        lines.reserve(5); // Reserve space for 5 entries
+
+        for (int i = 0; i < 5; i++) { // Build five score lines
+            int value = (i < static_cast<int>(highscores_.size())) ? highscores_[i] : 0; // Use real score if available
+
+            std::ostringstream oss;
+            oss << (i + 1) << ". " << std::setw(5) << std::setfill('0') << value; // Stream for zero padded formatting
+
+            lines.push_back(oss.str()); // Store formatted line
+        }
 
         float startY = windowHeight_ * 0.35f; // Start position for first score line
         float stepY  = 30.0f; // Spacing between lines

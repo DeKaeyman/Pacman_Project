@@ -12,6 +12,8 @@ add_library(logic STATIC
         observer/Subject.h
         camera/Camera.cpp
         camera/Camera.h
+        score/Score.cpp
+        score/Score.h
 )
 
 # Publieke include-paden (zodat app headers uit logic kan includen)

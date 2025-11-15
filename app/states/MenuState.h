@@ -16,5 +16,8 @@ namespace pacman::app {
         sf::Font font_; // Font used for all texts
         unsigned int windowWidth_{800}; // Stores last known window width
         unsigned int windowHeight_{600}; // Stores last known window height
+
+        std::vector<int> highscores_; // Stores the loaded top 5 highscores from logic::Score
+        const std::string highscorePath_{"assets/data/highscores.txt"}; // Path to the highscore file
     };
 }
