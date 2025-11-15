@@ -8,7 +8,7 @@
 * [x] Bouw een **Stopwatch** als Singleton (C++ chrono, géén SFML Clock): levert `deltaTime` voor consistente snelheid/animaties. Header in `logic/utils/Stopwatch.hpp`. 
 * [x] Bouw een **Random** als Singleton (Mersenne Twister + distributions). Gebruik één generator-instantie; geen `rand/srand`. Bestand: `logic/utils/Random.hpp`. 
 * [x] Definieer in `logic/camera/Camera.hpp` een projectie: wereldcoördinaten in [-1,1] × [-1,1] naar pixels. Gebruik dit in Views om spriteposities en groottes af te leiden. 
-* [ ] Start **MenuState** (app): tekent titel, top-5 highscores, en “Play” knop. Interactie: muisklik/Enter → push LevelState. Bestand: `app/states/MenuState.cpp`. 
+* [x] Start **MenuState** (app): tekent titel, top-5 highscores, en “Play” knop. Interactie: muisklik/Enter → push LevelState. Bestand: `app/states/MenuState.cpp`. 
 * [ ] Leg highscore-bestanden vast (pad in `assets/data/highscores.txt`). Score klasse in `logic/score/Score.hpp` beheert score en persistente top-5. MenuState leest en toont. 
 * [ ] Maak in `logic/world/TileMap.hpp` een beschrijving van het doolhof (repliceer figuur; walls, coins, fruits). World laadt/maakt grid en entiteiten. Representatie van muren kan in views met SFML-shapes. 
 * [ ] Voeg **Coin** en **Fruit** modellen toe (collectables). World houdt hun posities bij; Observer-events bij oppakken. Views tekenen simpele sprites uit `assets/sprites`. 
