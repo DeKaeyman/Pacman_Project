@@ -1,10 +1,12 @@
 #include "ConcreteFactory.h"
 
-// #include "logic/entities/PacMan.hpp"
-// #include "logic/entities/Ghost.hpp"
-// #include "logic/entities/Coin.hpp"
-// #include "logic/entities/Fruit.hpp"
-// #include "logic/world/Wall.hpp"
+#include <SFML/Graphics/RenderWindow.hpp>
+
+#include "../logic/entities/Coin.h"
+#include "../logic/entities/Fruit.h"
+
+#include "../views/CoinView.h"
+#include "../views/FruitView.h"
 
 #include <cassert>
 
@@ -28,13 +30,15 @@ namespace pacman::app {
     }
 
     std::shared_ptr<logic::Coin> ConcreteFactory::createCoin() {
-        auto m = /* std::make_shared<logic::Coin>(...) */ notImplementedModel<logic::Coin>(); // Stub creation
+        logic::Rect initial{};
+        auto m = std::make_shared<logic::Coin>(initial);
         attachViewToModel(m); // Connect model to view
         return m; // Return Coin model
     }
 
     std::shared_ptr<logic::Fruit> ConcreteFactory::createFruit() {
-        auto m = /* std::make_shared<logic::Fruit>(...) */ notImplementedModel<logic::Fruit>(); // Stub creation
+        logic::Rect initial{};
+        auto m = std::make_shared<logic::Fruit>(initial);
         attachViewToModel(m); // Connect model to view
         return m; // Return Fruit model
     }
@@ -46,8 +50,22 @@ namespace pacman::app {
     }
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::PacMan> &) {} // Empty stub; would connect PacMan view to render window
+
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Ghost> &) {} // Empty stub; would connect Ghost view to render window
-    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Coin> &) {} // Empty stub; would connect Coin view to render window
-    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Fruit> &) {} // Empty stub; would connect Fruit view to render window
+
+    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Coin>& coin) {
+        if (!window_ || !coin) return;
+        auto view = std::make_unique<CoinView>(coin);
+        coin->attach(view.get());
+        views_.add(std::move(view));
+    }
+
+    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Fruit>& fruit) {
+        if (!window_ || !fruit) return;
+        auto view = std::make_unique<FruitView>(fruit);
+        fruit->attach(view.get());
+        views_.add(std::move(view));
+    }
+
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Wall> &) {} // Empty stub; would connect Wall view to render window
 }

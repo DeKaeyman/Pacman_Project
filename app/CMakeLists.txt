@@ -24,6 +24,10 @@ add_executable(pacman
         factory/ConcreteFactory.cpp
         views/View.h
         views/ViewRegistry.h
+        views/CoinView.cpp
+        views/CoinView.h
+        views/FruitView.cpp
+        views/FruitView.h
 )
 
 target_link_libraries(pacman PRIVATE logic sfml-graphics sfml-window sfml-system

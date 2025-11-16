@@ -4,6 +4,10 @@ add_library(logic STATIC
         utils/Stopwatch.h
         entities/Entity.cpp
         entities/Entity.h
+        entities/Coin.cpp
+        entities/Coin.h
+        entities/Fruit.cpp
+        entities/Fruit.h
         world/World.cpp
         world/World.h
         factory/AbstractFactory.h
