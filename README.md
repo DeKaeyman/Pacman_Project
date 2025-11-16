@@ -12,7 +12,7 @@
 * [x] Leg highscore-bestanden vast (pad in `assets/data/highscores.txt`). Score klasse in `logic/score/Score.hpp` beheert score en persistente top-5. MenuState leest en toont. 
 * [x] Maak in `logic/world/TileMap.hpp` een beschrijving van het doolhof (repliceer figuur; walls, coins, fruits). World laadt/maakt grid en entiteiten. Representatie van muren kan in views met SFML-shapes. 
 * [x] Voeg **Coin** en **Fruit** modellen toe (collectables). World houdt hun posities bij; Observer-events bij oppakken. Views tekenen simpele sprites uit `assets/sprites`. 
-* [ ] Maak **PacMan** model (positie, richting, snelheid; continue beweging). Logic beslist beweging & botsing, géén SFML. Bestand: `logic/entities/PacMan.hpp`. 
+* [x] Maak **PacMan** model (positie, richting, snelheid; continue beweging). Logic beslist beweging & botsing, géén SFML. Bestand: `logic/entities/PacMan.hpp`. 
 * [ ] Koppel **PacManView** in `app/views/PacManView.cpp`: kiest sprite op basis van richting; animatie mond open/dicht o.b.v. Stopwatch-tijd. Observer-update triggert redraw. 
 * [ ] Laat **LevelState** (app) een World instantie creëren, ConcreteFactory injecteren en input vertalen naar “actions” (links/rechts/omhoog/omlaag), zonder logic binnen de state. Bestand: `app/states/LevelState.cpp`. 
 * [ ] Implementeer in World continue beweging: Pac-Man volgt laatste richting tot nieuwe input of botsing met wall; botsing stopt/clipt beweging. Gebruik deltaTime snelheid. 

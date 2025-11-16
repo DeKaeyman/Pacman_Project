@@ -8,6 +8,9 @@ add_library(logic STATIC
         entities/Coin.h
         entities/Fruit.cpp
         entities/Fruit.h
+        entities/Direction.h
+        entities/PacMan.cpp
+        entities/PacMan.h
         world/World.cpp
         world/World.h
         factory/AbstractFactory.h
