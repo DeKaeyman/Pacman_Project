@@ -9,7 +9,7 @@ namespace pacman::logic {
 
     class PacMan : public Entity, public Subject { // Logic only model for Pacman
     public:
-        PacMan(const Rect& startBounds, double speed);
+        PacMan(const Rect& startBounds, double speed = 1.0f);
 
         Rect bounds() const override { return bounds_; } // Current bounding box of Pacman
         void update(double dt) override; // Continuous movement based on current direction and speed

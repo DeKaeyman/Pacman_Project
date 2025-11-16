@@ -4,9 +4,11 @@
 
 #include "../logic/entities/Coin.h"
 #include "../logic/entities/Fruit.h"
+#include "../logic/entities/PacMan.h"
 
 #include "../views/CoinView.h"
 #include "../views/FruitView.h"
+#include "../views/PacManView.h"
 
 #include <cassert>
 
@@ -17,8 +19,9 @@ namespace pacman::app {
         return nullptr;
     }
 
-    std::shared_ptr<logic::PacMan> ConcreteFactory::createPacMan() { // Creates PacMan and attaches view
-        auto m = /* std::make_shared<logic::PacMan>(...) */ notImplementedModel<logic::PacMan>(); // Stub creation
+    std::shared_ptr<logic::PacMan> ConcreteFactory::createPacMan() {
+        logic::Rect initial{};
+        auto m = std::make_shared<logic::PacMan>(initial);
         attachViewToModel(m); // Connect model to view
         return m; // Return PacMan model
     }
@@ -49,7 +52,12 @@ namespace pacman::app {
         return m; // Return Wall model
     }
 
-    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::PacMan> &) {} // Empty stub; would connect PacMan view to render window
+    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::PacMan> &pacman) {
+        if (!window_ || !pacman) return;
+        auto view = std::make_unique<PacManView>(pacman);
+        pacman->attach(view.get());
+        views_.add(std::move(view));
+    }
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Ghost> &) {} // Empty stub; would connect Ghost view to render window
 

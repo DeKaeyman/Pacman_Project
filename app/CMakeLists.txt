@@ -28,6 +28,8 @@ add_executable(pacman
         views/CoinView.h
         views/FruitView.cpp
         views/FruitView.h
+        views/PacManView.cpp
+        views/PacManView.h
 )
 
 target_link_libraries(pacman PRIVATE logic sfml-graphics sfml-window sfml-system
