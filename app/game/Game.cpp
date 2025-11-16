@@ -33,15 +33,10 @@ namespace pacman::app {
     }
 
     void Game::run() {
-        auto& clock = pacman::logic::Stopwatch::getInstance();
+        auto& stopwatch = pacman::logic::Stopwatch::getInstance();
+        stopwatch.reset();
 
         while (window_.isOpen()) { // Main loop of the window
-
-            clock.tick();
-            double dt = clock.deltaTime();
-
-            if (dt > 0.066) dt = 0.066;
-
             sf::Event e{};
             while (window_.pollEvent(e)) { // Process all system events
                 if (e.type == sf::Event::Closed) {
@@ -53,7 +48,14 @@ namespace pacman::app {
                 stateManager_->handleEvent(e); // Proceed to give events to the state manager
             }
 
-            stateManager_->update(0.0); // Update the logic in the active state
+            if (!window_.isOpen()) {
+                break;
+            }
+
+            stopwatch.tick();
+            double dt = stopwatch.deltaTime();
+
+            stateManager_->update(dt);
 
             window_.clear(); // Clear the background from the previous frame
             stateManager_->draw(window_); // Draw the active frame

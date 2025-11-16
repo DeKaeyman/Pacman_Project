@@ -17,7 +17,7 @@ namespace pacman::logic {
 
     class TileMap {
     public:
-        static constexpr int Width = 15; // Logical width of the tile grid
+        static constexpr int Width = 20; // Logical width of the tile grid
         static constexpr int Height = 11; // Logical height of the tile grid
 
         TileMap(); // Constructor build the grid from ASCII layout below

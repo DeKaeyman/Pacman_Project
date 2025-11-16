@@ -24,7 +24,7 @@ namespace pacman::logic {
         Random(); // Private constructor to enforce singleton
         ~Random() = default; // Default constructor
         Random(const Random&) = delete; // Disable copy constructor
-        Random operator=(const Random&) = delete; // Disable assignment
+        Random& operator=(const Random&) = delete; // Disable assignment
 
         std::mt19937 engine_; // Mersenne Twister PRNG engine providing deterministic sequences
     };
