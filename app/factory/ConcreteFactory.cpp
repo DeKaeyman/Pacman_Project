@@ -53,7 +53,7 @@ namespace pacman::app {
     }
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::PacMan> &pacman) {
-        if (!window_ || !pacman) return;
+        if (!pacman) return;
         auto view = std::make_unique<PacManView>(pacman);
         pacman->attach(view.get());
         views_.add(std::move(view));
@@ -62,14 +62,14 @@ namespace pacman::app {
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Ghost> &) {} // Empty stub; would connect Ghost view to render window
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Coin>& coin) {
-        if (!window_ || !coin) return;
+        if (!coin) return;
         auto view = std::make_unique<CoinView>(coin);
         coin->attach(view.get());
         views_.add(std::move(view));
     }
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Fruit>& fruit) {
-        if (!window_ || !fruit) return;
+        if (!fruit) return;
         auto view = std::make_unique<FruitView>(fruit);
         fruit->attach(view.get());
         views_.add(std::move(view));

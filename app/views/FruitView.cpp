@@ -1,6 +1,7 @@
 // app/views/FruitView.cpp
 #include "FruitView.h"
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <cmath>
 #include "../logic/observer/Event.h"
 
 namespace pacman::app {
@@ -9,12 +10,27 @@ namespace pacman::app {
     bool FruitView::textureLoaded_{false}; // Prevents repeated loading
 
     namespace { // Fruit sprite selection in sprite sheet
-        constexpr int FRUIT_SPRITE_X = 450;
-        constexpr int FRUIT_SPRITE_Y = 400;
-        constexpr int FRUIT_SPRITE_W = 16;
-        constexpr int FRUIT_SPRITE_H = 16;
-
         constexpr const char *SPRITE_SHEET_PATH = "assets/sprites/sprite.png"; // Asset location
+
+        constexpr unsigned int SHEET_COLS = 19;
+        constexpr unsigned int SHEET_ROWS = 19;
+
+        // Fruit grid position (0-based col,row)
+        constexpr unsigned int FRUIT_COL = 11;
+        constexpr unsigned int FRUIT_ROW = 11;
+
+        sf::IntRect spriteRectFromGrid(const sf::Texture& tex, unsigned int col, unsigned int row) {
+            const auto size = tex.getSize();
+            const float cellW = static_cast<float>(size.x) / static_cast<float>(SHEET_COLS);
+            const float cellH = static_cast<float>(size.y) / static_cast<float>(SHEET_ROWS);
+
+            const int left   = static_cast<int>(std::round(col * cellW));
+            const int top    = static_cast<int>(std::round(row * cellH));
+            const int right  = static_cast<int>(std::round((col + 1u) * cellW));
+            const int bottom = static_cast<int>(std::round((row + 1u) * cellH));
+
+            return { left, top, right - left, bottom - top };
+        }
     }
 
     void FruitView::ensureTextureLoaded() {
@@ -27,7 +43,7 @@ namespace pacman::app {
         ensureTextureLoaded(); // Make sure texture exists
         if(textureLoaded_) { // Configure sprite only if OK
             sprite_.setTexture(texture_); // Use shared texture
-            sprite_.setTextureRect(sf::IntRect(FRUIT_SPRITE_X, FRUIT_SPRITE_Y, FRUIT_SPRITE_W, FRUIT_SPRITE_H)); // Select fruit region
+            sprite_.setTextureRect(spriteRectFromGrid(texture_, FRUIT_COL, FRUIT_ROW)); // Select fruit region
         }
     }
 

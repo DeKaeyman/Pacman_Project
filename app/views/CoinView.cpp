@@ -1,6 +1,7 @@
 // app/views/CoinView.cpp
 #include "CoinView.h"
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <cmath>
 #include "../logic/observer/Event.h"
 
 namespace pacman::app {
@@ -9,12 +10,28 @@ namespace pacman::app {
     bool CoinView::textureLoaded_{false}; // Tracks if the texture has been loaded
 
     namespace { // Sprite sheet coordinates for coin tile
-        constexpr int COIN_SPRITE_X = 400;
-        constexpr int COIN_SPRITE_Y = 400;
-        constexpr int COIN_SPRITE_W = 16;
-        constexpr int COIN_SPRITE_H = 16;
-
         constexpr const char* SPRITE_SHEET_PATH = "assets/sprites/sprite.png"; // Path to sprite sheet asset
+
+        // Sprite sheet is 19 x 19 cells.
+        constexpr unsigned int SHEET_COLS = 19;
+        constexpr unsigned int SHEET_ROWS = 19;
+
+        // Coin position in the grid (0-based indices).
+        constexpr unsigned int COIN_COL = 8;
+        constexpr unsigned int COIN_ROW = 6;
+
+        sf::IntRect spriteRectFromGrid(const sf::Texture& tex, unsigned int col, unsigned int row) {
+            const auto size = tex.getSize();
+            const float cellW = static_cast<float>(size.x) / static_cast<float>(SHEET_COLS);
+            const float cellH = static_cast<float>(size.y) / static_cast<float>(SHEET_ROWS);
+
+            const int left = static_cast<int>(std::round(col * cellW));
+            const int top = static_cast<int>(std::round(row * cellH));
+            const int right = static_cast<int>(std::round((col + 1u) * cellW));
+            const int bottom = static_cast<int>(std::round((row + 1u) * cellH));
+
+            return {left, top, right - left, bottom - top};
+        }
     }
 
     void CoinView::ensureTextureLoaded() {
@@ -27,7 +44,7 @@ namespace pacman::app {
         ensureTextureLoaded(); // Ensure shared texture is available
         if(textureLoaded_) { // Setup sprite only if texture is loaded
             sprite_.setTexture(texture_); // Assign sprite sheet texture
-            sprite_.setTextureRect(sf::IntRect(COIN_SPRITE_X, COIN_SPRITE_Y, COIN_SPRITE_W, COIN_SPRITE_H)); // Select only the coin's region
+            sprite_.setTextureRect(spriteRectFromGrid(texture_, COIN_COL, COIN_ROW)); // Select only the coin's region
         }
     }
 

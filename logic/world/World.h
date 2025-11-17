@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include <functional>
+
 #include "../entities/Entity.h"
-#include "factory/AbstractFactory.h"
+#include "../factory/AbstractFactory.h"
 #include "TileMap.h"
 
 namespace pacman::logic {
@@ -16,7 +16,7 @@ namespace pacman::logic {
 
     class World {
     public:
-        using EntityPtr = std::unique_ptr<Entity>; // World is owner of all entities
+        using EntityPtr = std::shared_ptr<Entity>; // World is owner of all entities
         using EntityId = Entity::Id;
 
         explicit World(AbstractFactory& factory) : factory_{&factory} {};
