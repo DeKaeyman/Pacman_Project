@@ -9,8 +9,11 @@ namespace pacman::app {
 
     class ConcreteFactory final : public logic::AbstractFactory {
     public:
+        ConcreteFactory() noexcept : window_(nullptr) {}
         explicit ConcreteFactory(sf::RenderWindow& window) noexcept : window_(&window) {} // Stores reference to render window for view creation
         ~ConcreteFactory() override = default;
+
+        void setWindow(sf::RenderWindow& window) noexcept { window_ = &window; }
 
         std::shared_ptr<logic::PacMan> createPacMan() override; // Creates PacMan model and attaches its view
         std::shared_ptr<logic::Ghost> createGhost(logic::GhostKind kind) override; // Creates Ghost model and attaches its view
