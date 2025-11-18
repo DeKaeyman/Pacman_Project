@@ -5,10 +5,12 @@
 #include "../logic/entities/Coin.h"
 #include "../logic/entities/Fruit.h"
 #include "../logic/entities/PacMan.h"
+#include "../logic/entities/Wall.h"
 
 #include "../views/CoinView.h"
 #include "../views/FruitView.h"
 #include "../views/PacManView.h"
+#include "../views/WallView.h"
 
 #include <cassert>
 
@@ -47,7 +49,7 @@ namespace pacman::app {
     }
 
     std::shared_ptr<logic::Wall> ConcreteFactory::createWall() {
-        auto m = /* std::make_shared<logic::Wall>(...) */ notImplementedModel<logic::Wall>(); // Stub creation
+        auto m = std::make_shared<logic::Wall>(logic::Rect{});
         attachViewToModel(m); // Connect model to view
         return m; // Return Wall model
     }
@@ -75,5 +77,10 @@ namespace pacman::app {
         views_.add(std::move(view));
     }
 
-    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Wall> &) {} // Empty stub; would connect Wall view to render window
+    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Wall>& wall) {
+        if (!wall) return;
+
+        auto view = std::make_unique<WallView>(wall);
+        views_.add(std::move(view));
+    }
 }

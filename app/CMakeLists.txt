@@ -30,6 +30,8 @@ add_executable(pacman
         views/FruitView.h
         views/PacManView.cpp
         views/PacManView.h
+        views/WallView.cpp
+        views/WallView.h
 )
 
 target_link_libraries(pacman PRIVATE logic sfml-graphics sfml-window sfml-system

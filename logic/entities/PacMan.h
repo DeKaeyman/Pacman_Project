@@ -13,7 +13,7 @@ namespace pacman::logic {
 
         Rect bounds() const override { return bounds_; } // Current bounding box of Pacman
         void update(double dt) override; // Continuous movement based on current direction and speed
-        void setDirection(Direction dir) noexcept { direction_ = dir; } // Set the current movement direction
+        void setDirection(Direction dir) noexcept; // Set the current movement direction
         Direction direction() const noexcept { return direction_; } // Get current movement direction
         void setSpeed(double s) noexcept { speed_ = s; } // Set movement speed
         double speed() const noexcept { return speed_; } // Get movement speed

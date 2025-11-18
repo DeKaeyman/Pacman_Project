@@ -4,6 +4,7 @@
 
 #include "../entities/Entity.h"
 #include "../factory/AbstractFactory.h"
+#include "../entities/Direction.h"
 #include "TileMap.h"
 
 namespace pacman::logic {
@@ -48,6 +49,8 @@ namespace pacman::logic {
 
         void loadLevel(const TileMap& map); // Load a new level layout into the world.
         const TileMap& tileMap() const noexcept { return tileMap_; } // Access the current tile map for read only queries
+
+        void setPacManDirection(Direction dir);
 
     private:
         AbstractFactory* factory_{nullptr};

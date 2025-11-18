@@ -39,6 +39,10 @@ namespace pacman::app {
 
     void LevelState::update(double dt) {
         if (world_) { // Only update if world exists
+            if (desiredDirection_ != pacman::logic::Direction::None) {
+                world_->setPacManDirection(desiredDirection_);
+            }
+
             world_->update(dt); // Advance game simulation by dt
         }
     }

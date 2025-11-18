@@ -3,6 +3,7 @@
 #include "../entities/PacMan.h"
 #include "../entities/Coin.h"
 #include "../entities/Fruit.h"
+#include "../entities/Wall.h"
 
 #include <algorithm>
 #include <chrono>
@@ -56,6 +57,17 @@ namespace pacman::logic {
         }
     }
 
+    void World::setPacManDirection(Direction dir) {
+        for (auto& e : entities_) {
+            if (!e) continue;
+            auto pac = std::dynamic_pointer_cast<PacMan>(e);
+            if (pac) {
+                pac->setDirection(dir);
+                break;
+            }
+        }
+    }
+
     void World::snapshotLevelTemplate() { // Setup a startstate snapshot to support level reset
         levelTemplate_ = entities_;
     }
@@ -89,6 +101,15 @@ namespace pacman::logic {
                 const Rect r = tileMap_.tileRect(x, y); // World space rectangle for that tile
 
                 switch (t) {
+                    case TileType::Wall: {
+                        auto wall = factory_->createWall();
+                        if (wall) {
+                            wall->setBounds(r);
+                            addEntity(wall);
+                        }
+                        break;
+                    }
+
                     case TileType::Coin: {
                         auto coin = factory_->createCoin();
                         if (coin) {

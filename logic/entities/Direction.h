@@ -28,9 +28,9 @@ namespace pacman::logic {
     inline float dirToDy(Direction d) {
         switch (d) {
             case Direction::Up:
-                return 1.0f;
-            case Direction::Down:
                 return -1.0f;
+            case Direction::Down:
+                return 1.0f;
             default:
                 return 0.0f;
         }

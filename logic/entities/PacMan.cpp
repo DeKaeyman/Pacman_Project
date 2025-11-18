@@ -1,5 +1,6 @@
 // logic/entities/PacMan.cpp
 #include "PacMan.h"
+#include "../observer/Event.h"
 
 namespace pacman::logic {
 
@@ -21,5 +22,38 @@ namespace pacman::logic {
 
         bounds_.x += vx * dist;
         bounds_.y += vy * dist;
+    }
+
+    void PacMan::setDirection(Direction dir) noexcept {
+        if (direction_ == dir) return;
+        direction_ = dir;
+
+        using pacman::logic::EventType;
+        using pacman::logic::StateChangedPayload;
+        using pacman::logic::Event;
+
+        StateChangedPayload payload{};
+        switch (direction_) {
+            case Direction::Right:
+                payload.code = 0;
+                break;
+            case Direction::Left:
+                payload.code = 1;
+                break;
+            case Direction::Up:
+                payload.code = 2;
+                break;
+            case Direction::Down:
+                payload.code = 3;
+                break;
+            default:
+                return;
+        }
+
+        Event e{};
+        e.type = EventType::StateChanged;
+        e.payload = payload;
+
+        notify(e);
     }
 }
