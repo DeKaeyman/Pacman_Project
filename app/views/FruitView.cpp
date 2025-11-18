@@ -60,16 +60,22 @@ namespace pacman::app {
         if (!camera_) return; // Need camera for world -> pixel transform
         if (!textureLoaded_) return; // No texture loaded -> skip draw
 
-        pacman::logic::Rect r = model_->bounds(); // World coordinates of fruit
-        auto pixelRect = camera_->worldToPixel(r); // Convert to screen coordinates
+        pacman::logic::Rect r = model_->bounds();
+        auto pixelRect = camera_->worldToPixel(r);
 
-        const auto& texRect = sprite_.getTextureRect(); // Size of sprite frame
-        float scaleX = static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width); // Scale X fit
-        float scaleY = static_cast<float>(pixelRect.h) / static_cast<float>(texRect.height); // Scale Y fit
+        const auto& texRect = sprite_.getTextureRect();
 
-        sprite_.setPosition(static_cast<float>(pixelRect.x), static_cast<float>(pixelRect.y)); // Position on screen
-        sprite_.setScale(scaleX, scaleY); // Apply scaling
+        float scale = static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width);
 
-        window.draw(sprite_); // Draw sprite
+        float finalW = texRect.width  * scale;
+        float finalH = texRect.height * scale;
+
+        float posX = static_cast<float>(pixelRect.x) + (pixelRect.w - finalW) * 0.5f;
+        float posY = static_cast<float>(pixelRect.y) + (pixelRect.h - finalH) * 0.5f;
+
+        sprite_.setPosition(posX, posY);
+        sprite_.setScale(scale, scale);
+
+        window.draw(sprite_);
     }
 };

@@ -61,16 +61,22 @@ namespace pacman::app {
         if (!camera_) return; // Camera required for world -> pixel mapping
         if (!textureLoaded_) return; // No texture loaded -> skip drawing
 
-        pacman::logic::Rect r = model_->bounds(); // Get coin's world space rectangle
-        auto pixelRect = camera_->worldToPixel(r); // Convert to pixel coordinates
+        pacman::logic::Rect r = model_->bounds();
+        auto pixelRect = camera_->worldToPixel(r);
 
-        const auto& texRect = sprite_.getTextureRect(); // Get original sprite's dimensions
-        float scaleX = static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width); // Fit sprite width
-        float scaleY = static_cast<float>(pixelRect.h) / static_cast<float>(texRect.height); // Fit sprite height
+        const auto& texRect = sprite_.getTextureRect();
 
-        sprite_.setPosition(static_cast<float>(pixelRect.x), static_cast<float>(pixelRect.y)); // Position on screen
-        sprite_.setScale(scaleX, scaleY); // Scale sprite to tile size
+        float scale = static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width);
 
-        window.draw(sprite_); // Final draw call
+        float finalW = texRect.width  * scale;
+        float finalH = texRect.height * scale;
+
+        float posX = static_cast<float>(pixelRect.x) + (pixelRect.w - finalW) * 0.5f;
+        float posY = static_cast<float>(pixelRect.y) + (pixelRect.h - finalH) * 0.5f;
+
+        sprite_.setPosition(posX, posY);
+        sprite_.setScale(scale, scale);
+
+        window.draw(sprite_);
     }
 }

@@ -139,12 +139,18 @@ namespace pacman::app {
         pacman::logic::Rect r = model_->bounds();
         auto pixelRect = camera_->worldToPixel(r);
 
-        const auto& textRect = sprite_.getTextureRect();
-        float scaleX = static_cast<float>(pixelRect.w) / static_cast<float>(textRect.width);
-        float scaleY = static_cast<float>(pixelRect.h) / static_cast<float>(textRect.height);
+        const auto& texRect = sprite_.getTextureRect();
 
-        sprite_.setPosition(static_cast<float>(pixelRect.x), static_cast<float>(pixelRect.y));
-        sprite_.setScale(scaleX, scaleY);
+        float scale = static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width);
+
+        float finalW = texRect.width  * scale;
+        float finalH = texRect.height * scale;
+
+        float posX = static_cast<float>(pixelRect.x) + (pixelRect.w - finalW) * 0.5f;
+        float posY = static_cast<float>(pixelRect.y) + (pixelRect.h - finalH) * 0.5f;
+
+        sprite_.setPosition(posX, posY);
+        sprite_.setScale(scale, scale);
 
         window.draw(sprite_);
     }

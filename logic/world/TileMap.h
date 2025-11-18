@@ -33,14 +33,23 @@ namespace pacman::logic {
 
         Rect tileRect(int x, int y) const noexcept { // Convert tile coords to world space rectangle
             Rect r{};
-            const float tileW = 2.0f / static_cast<float>(Width); // Each tile width in normalized [-1,1]
-            const float tileH = 2.0f / static_cast<float>(Height); // Each tile height in normalized [-1,1]
+            // Instead of separate tileW / tileH
+            const float tileSize = 2.0f / static_cast<float>(std::max(Width, Height));
 
-            r.x = -1.0f + static_cast<float>(x) * tileW; // Left edge of the tile in world coords
-            r.y = 1.0f - static_cast<float>(y + 1) * tileH; // Top edge
+            // Total size of the map in world units
+            const float worldW = tileSize * static_cast<float>(Width);
+            const float worldH = tileSize * static_cast<float>(Height);
 
-            r.w = tileW; // Width of one tile
-            r.h = tileH; // Height of one tile
+            // Center the map in world space [-1,1] x [-1,1]
+            const float startX = -worldW * 0.5f;  // left edge of map
+            const float startY =  worldH * 0.5f;  // top edge of map
+
+            r.x = startX + static_cast<float>(x) * tileSize;
+            r.y = startY - static_cast<float>(y + 1) * tileSize;
+
+            r.w = tileSize;
+            r.h = tileSize;
+
 
             return r; // Return world space AABB for this tile
         }

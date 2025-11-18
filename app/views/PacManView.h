@@ -20,7 +20,7 @@ namespace pacman::app {
     private:
         std::shared_ptr<pacman::logic::PacMan> model_;
         sf::Sprite sprite_;
-        logic::Direction direction_{logic::Direction::Right};
+        logic::Direction direction_{logic::Direction::Up};
 
         static sf::Texture texture_;
         static bool textureLoaded_;

@@ -1,8 +1,11 @@
 // logic/camera/Camera.cpp
 #include "Camera.h"
 #include <algorithm>
+#include <cmath>
 
 namespace pacman::logic {
+
+    static constexpr float WorldExtent = 2.0f;
 
     Camera::Camera(int pixelWidth, int pixelHeight) : width_{pixelWidth > 0 ? pixelWidth : 1}, height_{pixelHeight > 0 ? pixelHeight : 1} {} // Initializes the camera with a given viewport size
 
@@ -11,15 +14,24 @@ namespace pacman::logic {
         height_ = pixelHeight > 0 ? pixelHeight : 1;
     }
 
-    std::pair<float, float> Camera::worldToPixel(float wx, float wy) const noexcept { // Converts world coordinates in [-1,1] to pixel space.
-        float nx = (wx + 1.0f) * 0.5f; // Normalize X from [-1,1] to [0,1]
-        float ny = (wy + 1.0f) * 0.5f; // Normalize Y from [-1,1] to [0,1]
+    std::pair<float, float> Camera::worldToPixel(float wx, float wy) const noexcept {
+        // Uniform scale: same for X and Y so world units stay square
+        const float scale = static_cast<float>(std::min(width_, height_)) / WorldExtent;
 
-        ny = 1.0f - ny; // Flip Y so that 0 = top
+        // Size of the world area in pixels after uniform scaling
+        const float worldPixelW = WorldExtent * scale;
+        const float worldPixelH = WorldExtent * scale;
 
-        // Scale normalized coordinates to the viewport size
-        float px = nx * static_cast<float>(width_);
-        float py = ny * static_cast<float>(height_);
+        // Letterbox: center the world in the window
+        const float offsetX = (static_cast<float>(width_)  - worldPixelW) * 0.5f;
+        const float offsetY = (static_cast<float>(height_) - worldPixelH) * 0.5f;
+
+        // Map world [-1,1] -> [0, WorldExtent] in both axes
+        const float nx = (wx + 1.0f) * 0.5f * WorldExtent;
+        const float ny = (wy + 1.0f) * 0.5f * WorldExtent;
+
+        const float px = offsetX + nx * scale;
+        const float py = offsetY + ny * scale;
 
         return {px, py};
     }
@@ -27,22 +39,19 @@ namespace pacman::logic {
     PixelRect Camera::worldToPixel(const pacman::logic::Rect &worldRect) const noexcept { // Converts a world space rectangle into a pixel space rectangle
         auto [px, py] = worldToPixel(worldRect.x, worldRect.y); // Convert the top left corner
 
-        // World coordinates range is fixed as [-1,1], size = 2.0
-        float scaleX = static_cast<float>(width_) / 2.0f;
-        float scaleY = static_cast<float>(height_) / 2.0f;
+        const float scale = static_cast<float>(std::min(width_, height_)) / WorldExtent;
 
         // Convert width/height from world units to pixels
-        float pw = worldRect.w * scaleX;
-        float ph = worldRect.h * scaleY;
+        const float pw = worldRect.w * scale;
+        const float ph = worldRect.h * scale;
 
 
         // Build and return pixel rectangle
         PixelRect pr{};
-        pr.x = static_cast<int>(px);
-        pr.y = static_cast<int>(py);
-        pr.w = static_cast<int>(pw);
-        pr.h = static_cast<int>(ph);
-
+        pr.x = static_cast<int>(std::lround(px));
+        pr.y = static_cast<int>(std::lround(py));
+        pr.w = static_cast<int>(std::lround(pw));
+        pr.h = static_cast<int>(std::lround(ph));
         return pr;
     }
 }
