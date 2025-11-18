@@ -14,21 +14,21 @@ namespace pacman::app {
 
     class LevelState : public State {
     public:
-        explicit LevelState(StateManager& m);
+        explicit LevelState(StateManager& m); // Construct state and hook into StateManager
 
-        void handleEvent(const sf::Event& e) override;
-        void update(double dt) override;
-        void draw(sf::RenderWindow& w) override;
+        void handleEvent(const sf::Event& e) override; // Translate SFML events into desired direction
+        void update(double dt) override; // Advance world simulation
+        void draw(sf::RenderWindow& w) override; // Draw all views for the current frame
 
     private:
-        std::unique_ptr<logic::World> world_;
-        logic::TileMap tileMap_;
+        std::unique_ptr<logic::World> world_; //Owns logic world instance for this level
+        logic::TileMap tileMap_; // Tile layout used to spawn entities
 
-        std::unique_ptr<ConcreteFactory> factory_;
+        std::unique_ptr<ConcreteFactory> factory_; // Creates model + attaches views for this level
         
-        logic::Direction desiredDirection_{logic::Direction::None};
+        logic::Direction desiredDirection_{logic::Direction::None}; // Last request direction from player input
 
-        unsigned int windowWidth_{800};
-        unsigned int windowHeight_{600};
+        unsigned int windowWidth_{800}; // Cached window width used for layout
+        unsigned int windowHeight_{600}; // Cached window height used for layout
     };
 }

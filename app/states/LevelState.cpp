@@ -9,14 +9,14 @@
 
 namespace pacman::app {
 
-    LevelState::LevelState(pacman::app::StateManager &m) : State(m), tileMap_() {
-        factory_ = std::make_unique<ConcreteFactory>();
-        world_ = std::make_unique<pacman::logic::World>(*factory_);
-        world_->loadLevel(tileMap_);
+    LevelState::LevelState(pacman::app::StateManager &m) : State(m), tileMap_() { // Construct LevelState and init tilemap_
+        factory_ = std::make_unique<ConcreteFactory>(); // Create app side factory
+        world_ = std::make_unique<pacman::logic::World>(*factory_); // Create world and inject abstract factory
+        world_->loadLevel(tileMap_); // Build entities based on tile layout
     }
 
     void LevelState::handleEvent(const sf::Event& e) {
-        if (e.type == sf::Event::KeyPressed) {
+        if (e.type == sf::Event::KeyPressed) { // Only react to key press events
             using sf::Keyboard;
             switch (e.key.code) {
                 case Keyboard::Up:
@@ -38,19 +38,19 @@ namespace pacman::app {
     }
 
     void LevelState::update(double dt) {
-        if (world_) {
-            world_->update(dt);
+        if (world_) { // Only update if world exists
+            world_->update(dt); // Advance game simulation by dt
         }
     }
 
     void LevelState::draw(sf::RenderWindow& w) {
-        const auto size = w.getSize();
-        windowWidth_  = size.x;
-        windowHeight_ = size.y;
+        const auto size = w.getSize(); // Read current window size
+        windowWidth_  = size.x; // Cache width
+        windowHeight_ = size.y; // Cache height
 
         if (factory_) {
-            factory_->setWindow(w);
-            factory_->views().drawAll(w);
+            factory_->setWindow(w); // Provide render window to factory/views
+            factory_->views().drawAll(w); // Draw all registered views
         }
     }
 }

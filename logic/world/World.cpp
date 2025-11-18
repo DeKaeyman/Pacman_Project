@@ -72,21 +72,21 @@ namespace pacman::logic {
     }
 
     void World::loadLevel(const pacman::logic::TileMap &map) {
-        tileMap_ = map;
+        tileMap_ = map; // Store a copy of the given tile layout
 
-        entities_.clear();
-        lastCollisions_.clear();
-        nextId_ = 1;
+        entities_.clear(); // Remove any existing entities
+        lastCollisions_.clear(); // Clear previous collision data
+        nextId_ = 1; // Reset entity id counter
 
         if (!factory_) {
-            return;
+            return; // Without a factory we cannot create models/views
         }
 
-        for (int y = 0; y < TileMap::Height; y++) {
-            for (int x = 0; x < TileMap::Width; x++) {
+        for (int y = 0; y < TileMap::Height; y++) { // Loop over all rows
+            for (int x = 0; x < TileMap::Width; x++) { // Loop over all columns
 
-                const TileType t = tileMap_.at(x, y);
-                const Rect r = tileMap_.tileRect(x, y);
+                const TileType t = tileMap_.at(x, y); // Type of tile on this location
+                const Rect r = tileMap_.tileRect(x, y); // World space rectangle for that tile
 
                 switch (t) {
                     case TileType::Coin: {
@@ -122,6 +122,6 @@ namespace pacman::logic {
             }
         }
 
-        snapshotLevelTemplate();
+        snapshotLevelTemplate(); // Store current entity setup as "initial state" for reset
     }
 }
