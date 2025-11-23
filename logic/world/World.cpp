@@ -36,6 +36,14 @@ namespace pacman::logic {
     }
 
     void World::update(double dt) {
+        for (auto& e : entities_) {
+            if (!e || !e->active) continue;
+            auto pac = std::dynamic_pointer_cast<PacMan>(e);
+            if (!pac) continue;
+
+            checkPacmanDesiredDirection(*pac, dt);
+        }
+
         for (auto& e : entities_) { // Update all active entities
             if (e && e->active) e->update(dt);
         }
@@ -66,11 +74,9 @@ namespace pacman::logic {
             float wxCenter = w.x + w.w / 2.f;
             float wyCenter = w.y + w.h / 2.f;
 
-            // Compute half-extents
             float halfW = (p.w + w.w) / 2.f;
             float halfH = (p.h + w.h) / 2.f;
 
-            // Calculate deltas
             float dx = pxCenter - wxCenter;
             float dy = pyCenter - wyCenter;
 
@@ -91,7 +97,7 @@ namespace pacman::logic {
             }
 
             pac.setBounds(p);
-            pac.setDirection(Direction::None);
+            //pac.setDirection(Direction::None);
         };
 
         for (const auto& [idA, idB] : lastCollisions_) {
@@ -118,10 +124,36 @@ namespace pacman::logic {
             if (!e) continue;
             auto pac = std::dynamic_pointer_cast<PacMan>(e);
             if (pac) {
-                pac->setDirection(dir);
+                pac->setDesiredDirection(dir);
                 break;
             }
         }
+    }
+
+    bool World::checkPacmanDesiredDirection(PacMan& pac, double dt) {
+        Direction desired = pac.desiredDirection();
+        if (desired == Direction::None) return false;
+        if (desired == pac.direction()) return false;
+
+        Rect next = pac.bounds();
+        float step = static_cast<float>(dt);
+        next.x += dirToDx(desired) * step;
+        next.y += dirToDy(desired) * step;
+
+        for (const auto& ent : entities_) {
+            if (!ent || !ent->active || !ent->solid) continue;
+            if (ent.get() == &pac) continue;
+
+            auto* wall = dynamic_cast<Wall*>(ent.get());
+            if (!wall) continue;
+
+            if (intersects(next, wall->bounds(), 0.0003f)) {
+                return false;
+            }
+        }
+
+        pac.setDirection(desired);
+        return true;
     }
 
     void World::snapshotLevelTemplate() { // Setup a startstate snapshot to support level reset

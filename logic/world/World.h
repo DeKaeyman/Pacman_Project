@@ -9,10 +9,10 @@
 
 namespace pacman::logic {
 
-    inline bool intersects(const Rect& a, const Rect& b) { // Small AABB overlap test in world coordinates
-        const bool xoverlap = (a.x <= b.x + b.w) && (b.x <= a.x + a.w);
-        const bool yOverlap = (a.y <= b.y + b.h) && (b.y <= a.y + a.h);
-        return xoverlap && yOverlap;
+    inline bool intersects(const Rect& a, const Rect& b, float eps = 0) { // Small AABB overlap test in world coordinates
+        const bool xOverlap = (a.x < b.x + b.w - eps) && (b.x < a.x + a.w - eps);
+        const bool yOverlap = (a.y < b.y + b.h - eps) && (b.y < a.y + a.h - eps);
+        return xOverlap && yOverlap;
     }
 
     class World {
@@ -51,6 +51,9 @@ namespace pacman::logic {
         const TileMap& tileMap() const noexcept { return tileMap_; } // Access the current tile map for read only queries
 
         void setPacManDirection(Direction dir);
+
+    private:
+        bool checkPacmanDesiredDirection(PacMan& pac, double dt);
 
     private:
         AbstractFactory* factory_{nullptr};

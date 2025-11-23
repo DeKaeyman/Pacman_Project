@@ -20,7 +20,7 @@ namespace pacman::app {
     private:
         std::shared_ptr<pacman::logic::PacMan> model_; // Pacman model this view follows
         sf::Sprite sprite_; // Visual sprite for Pacman
-        logic::Direction direction_{logic::Direction::Up}; // current facing direction for sprite selection
+        logic::Direction direction_{logic::Direction::None}; // current facing direction for sprite selection
 
         static sf::Texture texture_; // Shared texture across all Pacman views
         static bool textureLoaded_; // Guard flag to ensure we load texture only once

@@ -24,6 +24,11 @@ namespace pacman::logic {
         bounds_.y += vy * dist;
     }
 
+    void PacMan::setDesiredDirection(pacman::logic::Direction dir) noexcept {
+        if (desiredDirection_ == dir) return;
+        desiredDirection_ = dir;
+    }
+
     void PacMan::setDirection(Direction dir) noexcept {
         if (direction_ == dir) return;
         direction_ = dir;
