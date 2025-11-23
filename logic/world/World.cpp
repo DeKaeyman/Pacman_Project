@@ -55,6 +55,62 @@ namespace pacman::logic {
                 }
             }
         }
+
+        auto resolvePacmanWall = [](PacMan& pac, const Wall& wall) {
+            Rect p = pac.bounds();
+            Rect w = wall.bounds();
+
+            float pxCenter = p.x + p.w / 2.f;
+            float pyCenter = p.y + p.h / 2.f;
+
+            float wxCenter = w.x + w.w / 2.f;
+            float wyCenter = w.y + w.h / 2.f;
+
+            // Compute half-extents
+            float halfW = (p.w + w.w) / 2.f;
+            float halfH = (p.h + w.h) / 2.f;
+
+            // Calculate deltas
+            float dx = pxCenter - wxCenter;
+            float dy = pyCenter - wyCenter;
+
+            float overlapX = halfW - std::abs(dx);
+            float overlapY = halfH - std::abs(dy);
+
+            if (overlapX < overlapY) {
+                if (dx > 0)
+                    p.x = w.x + w.w;
+                else
+                    p.x = w.x - p.w;
+
+            } else {
+                if (dy > 0)
+                    p.y = w.y + w.h;
+                else
+                    p.y = w.y - p.h;
+            }
+
+            pac.setBounds(p);
+            pac.setDirection(Direction::None);
+        };
+
+        for (const auto& [idA, idB] : lastCollisions_) {
+            Entity* a = get(idA);
+            Entity* b = get(idB);
+            if (!a || !b) continue;
+
+            PacMan* pac = dynamic_cast<PacMan*>(a);
+            Wall* wall = dynamic_cast<Wall*>(b);
+
+            if (!pac || !wall) {
+                pac  = dynamic_cast<PacMan*>(b);
+                wall = dynamic_cast<Wall*>(a);
+            }
+
+            if (pac && wall) {
+                resolvePacmanWall(*pac, *wall);
+            }
+        }
     }
 
     void World::setPacManDirection(Direction dir) {
