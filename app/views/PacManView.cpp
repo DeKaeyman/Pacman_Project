@@ -55,19 +55,19 @@ namespace pacman::app {
             // Choose row based on facing direction and mouth state
             switch (dir) {
                 case logic::Direction::Right:
-                    if (useBig)  return ROW_RIGHT_BIG;
+                    if (useBig) return ROW_RIGHT_BIG;
                     if (useSmall) return ROW_RIGHT_SMALL;
                     return ROW_CLOSED;
                 case logic::Direction::Down:
-                    if (useBig)  return ROW_DOWN_BIG;
+                    if (useBig) return ROW_DOWN_BIG;
                     if (useSmall) return ROW_DOWN_SMALL;
                     return ROW_CLOSED;
                 case logic::Direction::Left:
-                    if (useBig)  return ROW_LEFT_BIG;
+                    if (useBig) return ROW_LEFT_BIG;
                     if (useSmall) return ROW_LEFT_SMALL;
                     return ROW_CLOSED;
                 case logic::Direction::Up:
-                    if (useBig)  return ROW_UP_BIG;
+                    if (useBig) return ROW_UP_BIG;
                     if (useSmall) return ROW_UP_SMALL;
                     return ROW_CLOSED;
             }
@@ -150,7 +150,7 @@ namespace pacman::app {
         float posX = static_cast<float>(pixelRect.x) + (pixelRect.w - finalW) * 0.5f; // Center horizontally
         float posY = static_cast<float>(pixelRect.y) + (pixelRect.h - finalH) * 0.5f; // Center vertically
 
-        sprite_.setPosition(posX, posY); // Place sprite on screen
+        sprite_.setPosition(posX - 3.5f, posY); // Place sprite on screen (- 3.5f because of sprite not being a perfect square)
         sprite_.setScale(scale, scale); // Apply uniform scaling
 
         window.draw(sprite_); // Draw Pacman sprite

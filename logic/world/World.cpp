@@ -37,11 +37,11 @@ namespace pacman::logic {
 
     void World::update(double dt) {
         for (auto& e : entities_) {
-            if (!e || !e->active) continue;
+            if (!e || !e->active) continue; // Only active entities participate
             auto pac = std::dynamic_pointer_cast<PacMan>(e);
-            if (!pac) continue;
+            if (!pac) continue; // Skip non Pacman entities
 
-            checkPacmanDesiredDirection(*pac, dt);
+            checkPacmanDesiredDirection(*pac, dt); // Try to turn Pacman if buffered direction is valid
         }
 
         for (auto& e : entities_) { // Update all active entities
@@ -65,39 +65,33 @@ namespace pacman::logic {
         }
 
         auto resolvePacmanWall = [](PacMan& pac, const Wall& wall) {
-            Rect p = pac.bounds();
-            Rect w = wall.bounds();
+            Rect p = pac.bounds(); // Pacman current position
+            Rect w = wall.bounds(); // Wall bounds
 
-            float pxCenter = p.x + p.w / 2.f;
+            float pxCenter = p.x + p.w / 2.f; // Pacman center
             float pyCenter = p.y + p.h / 2.f;
 
-            float wxCenter = w.x + w.w / 2.f;
+            float wxCenter = w.x + w.w / 2.f; // Wall center
             float wyCenter = w.y + w.h / 2.f;
 
-            float halfW = (p.w + w.w) / 2.f;
+            float halfW = (p.w + w.w) / 2.f; // Half extents combined
             float halfH = (p.h + w.h) / 2.f;
 
-            float dx = pxCenter - wxCenter;
+            float dx = pxCenter - wxCenter; // Distance between centers
             float dy = pyCenter - wyCenter;
 
-            float overlapX = halfW - std::abs(dx);
-            float overlapY = halfH - std::abs(dy);
+            float overlapX = halfW - std::abs(dx); // Overlap on X axis
+            float overlapY = halfH - std::abs(dy); // Overlap on Y axis
 
-            if (overlapX < overlapY) {
-                if (dx > 0)
-                    p.x = w.x + w.w;
-                else
-                    p.x = w.x - p.w;
-
+            if (overlapX < overlapY) { // Push back on shallowest penetration axis
+                if (dx > 0) p.x = w.x + w.w;
+                else p.x = w.x - p.w;
             } else {
-                if (dy > 0)
-                    p.y = w.y + w.h;
-                else
-                    p.y = w.y - p.h;
+                if (dy > 0) p.y = w.y + w.h;
+                else p.y = w.y - p.h;
             }
 
-            pac.setBounds(p);
-            //pac.setDirection(Direction::None);
+            pac.setBounds(p); // Apply correct position
         };
 
         for (const auto& [idA, idB] : lastCollisions_) {
@@ -108,13 +102,13 @@ namespace pacman::logic {
             PacMan* pac = dynamic_cast<PacMan*>(a);
             Wall* wall = dynamic_cast<Wall*>(b);
 
-            if (!pac || !wall) {
+            if (!pac || !wall) { // Try reversed order
                 pac  = dynamic_cast<PacMan*>(b);
                 wall = dynamic_cast<Wall*>(a);
             }
 
             if (pac && wall) {
-                resolvePacmanWall(*pac, *wall);
+                resolvePacmanWall(*pac, *wall); // Clip Pacman against wall
             }
         }
     }
@@ -124,7 +118,7 @@ namespace pacman::logic {
             if (!e) continue;
             auto pac = std::dynamic_pointer_cast<PacMan>(e);
             if (pac) {
-                pac->setDesiredDirection(dir);
+                pac->setDesiredDirection(dir); // Store buffered input
                 break;
             }
         }
@@ -132,27 +126,27 @@ namespace pacman::logic {
 
     bool World::checkPacmanDesiredDirection(PacMan& pac, double dt) {
         Direction desired = pac.desiredDirection();
-        if (desired == Direction::None) return false;
-        if (desired == pac.direction()) return false;
+        if (desired == Direction::None) return false; // No intent
+        if (desired == pac.direction()) return false; // Already facing that way
 
-        Rect next = pac.bounds();
+        Rect next = pac.bounds(); // Simulate small step in new direction
         float step = static_cast<float>(dt);
         next.x += dirToDx(desired) * step;
         next.y += dirToDy(desired) * step;
 
-        for (const auto& ent : entities_) {
+        for (const auto& ent : entities_) { // Check if Pacman would hit wall
             if (!ent || !ent->active || !ent->solid) continue;
             if (ent.get() == &pac) continue;
 
             auto* wall = dynamic_cast<Wall*>(ent.get());
             if (!wall) continue;
 
-            if (intersects(next, wall->bounds(), 0.0003f)) {
-                return false;
+            if (intersects(next, wall->bounds(), 0.0003f)) { // Tiny epsilon to avoid jitter
+                return false; // Wall blocks turn
             }
         }
 
-        pac.setDirection(desired);
+        pac.setDirection(desired); // Turn allowed -> apply it
         return true;
     }
 

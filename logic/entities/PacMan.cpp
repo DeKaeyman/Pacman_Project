@@ -10,8 +10,8 @@ namespace pacman::logic {
     }
 
     void PacMan::update(double dt) {
-        if (!active) return;
-        if (direction_ == Direction::None) return;
+        if (!active) return; // Dead/Inactive pacman shouldn't move
+        if (direction_ == Direction::None) return; // No active direction -> no movement
 
         // Unit direction vector in world space
         float vx = dirToDx(direction_);
@@ -20,25 +20,21 @@ namespace pacman::logic {
         // Distance travelled this frame
         float dist = static_cast<float>(speed_ * dt);
 
-        bounds_.x += vx * dist;
-        bounds_.y += vy * dist;
+        bounds_.x += vx * dist; // Advance Pacman horizontally
+        bounds_.y += vy * dist; // Advance Pacman vertically
     }
 
     void PacMan::setDesiredDirection(pacman::logic::Direction dir) noexcept {
-        if (desiredDirection_ == dir) return;
-        desiredDirection_ = dir;
+        if (desiredDirection_ == dir) return; // Ignore if direction already active
+        desiredDirection_ = dir; // Player requests new direction
     }
 
     void PacMan::setDirection(Direction dir) noexcept {
-        if (direction_ == dir) return;
-        direction_ = dir;
+        if (direction_ == dir) return; // Do nothing if direction already active
+        direction_ = dir; // Apply new actual direction
 
-        using pacman::logic::EventType;
-        using pacman::logic::StateChangedPayload;
-        using pacman::logic::Event;
-
-        StateChangedPayload payload{};
-        switch (direction_) {
+        StateChangedPayload payload{}; // Payload encoding direction as numeric code
+        switch (direction_) { // Map direction enum -> integer code for view
             case Direction::Right:
                 payload.code = 0;
                 break;
@@ -55,10 +51,10 @@ namespace pacman::logic {
                 return;
         }
 
-        Event e{};
-        e.type = EventType::StateChanged;
+        Event e{}; // Create Observer event
+        e.type = EventType::StateChanged; // Notify views of direction change
         e.payload = payload;
 
-        notify(e);
+        notify(e); // Send to all attached observers
     }
 }

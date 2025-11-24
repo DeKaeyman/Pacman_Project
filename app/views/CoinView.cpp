@@ -21,16 +21,16 @@ namespace pacman::app {
         constexpr unsigned int COIN_ROW = 6;
 
         sf::IntRect spriteRectFromGrid(const sf::Texture& tex, unsigned int col, unsigned int row) {
-            const auto size = tex.getSize();
-            const float cellW = static_cast<float>(size.x) / static_cast<float>(SHEET_COLS);
-            const float cellH = static_cast<float>(size.y) / static_cast<float>(SHEET_ROWS);
+            const auto size = tex.getSize(); // Full sheet size in pixels
+            const float cellW = static_cast<float>(size.x) / static_cast<float>(SHEET_COLS); // Width of one grid cell
+            const float cellH = static_cast<float>(size.y) / static_cast<float>(SHEET_ROWS); // Height of one grid cell
 
             const int left = static_cast<int>(std::round(col * cellW));
             const int top = static_cast<int>(std::round(row * cellH));
             const int right = static_cast<int>(std::round((col + 1u) * cellW));
             const int bottom = static_cast<int>(std::round((row + 1u) * cellH));
 
-            return {left, top, right - left, bottom - top};
+            return {left, top, right - left, bottom - top}; // Sprite rectangle
         }
     }
 
@@ -61,22 +61,22 @@ namespace pacman::app {
         if (!camera_) return; // Camera required for world -> pixel mapping
         if (!textureLoaded_) return; // No texture loaded -> skip drawing
 
-        pacman::logic::Rect r = model_->bounds();
-        auto pixelRect = camera_->worldToPixel(r);
+        pacman::logic::Rect r = model_->bounds(); // Get logic bounding box
+        auto pixelRect = camera_->worldToPixel(r); // Convert to pixel space rectangle
 
-        const auto& texRect = sprite_.getTextureRect();
+        const auto& texRect = sprite_.getTextureRect(); // Current sprite size in texture
 
-        float scale = static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width);
+        float scale = static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width); // Uniform scale so coin fits tile
 
-        float finalW = texRect.width  * scale;
-        float finalH = texRect.height * scale;
+        float finalW = texRect.width  * scale; // Pixel width after scaling
+        float finalH = texRect.height * scale; // Pixel height after scaling
 
-        float posX = static_cast<float>(pixelRect.x) + (pixelRect.w - finalW) * 0.5f;
-        float posY = static_cast<float>(pixelRect.y) + (pixelRect.h - finalH) * 0.5f;
+        float posX = static_cast<float>(pixelRect.x) + (pixelRect.w - finalW) * 0.5f; // Center horizontally
+        float posY = static_cast<float>(pixelRect.y) + (pixelRect.h - finalH) * 0.5f; // Center vertically
 
-        sprite_.setPosition(posX, posY);
-        sprite_.setScale(scale, scale);
+        sprite_.setPosition(posX, posY); // Put sprite on screen
+        sprite_.setScale(scale, scale); // Apply scaling
 
-        window.draw(sprite_);
+        window.draw(sprite_); // Draw final coin sprite
     }
 }

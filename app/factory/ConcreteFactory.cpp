@@ -22,8 +22,8 @@ namespace pacman::app {
     }
 
     std::shared_ptr<logic::PacMan> ConcreteFactory::createPacMan() {
-        logic::Rect initial{};
-        auto m = std::make_shared<logic::PacMan>(initial);
+        logic::Rect initial{}; // Default rectangle for Pacman until world positions it
+        auto m = std::make_shared<logic::PacMan>(initial); // Create model instance
         attachViewToModel(m); // Connect model to view
         return m; // Return PacMan model
     }
@@ -35,52 +35,52 @@ namespace pacman::app {
     }
 
     std::shared_ptr<logic::Coin> ConcreteFactory::createCoin() {
-        logic::Rect initial{};
-        auto m = std::make_shared<logic::Coin>(initial);
+        logic::Rect initial{}; // Default rectangle for Coin until world positions it
+        auto m = std::make_shared<logic::Coin>(initial); // Create model instance
         attachViewToModel(m); // Connect model to view
         return m; // Return Coin model
     }
 
     std::shared_ptr<logic::Fruit> ConcreteFactory::createFruit() {
-        logic::Rect initial{};
-        auto m = std::make_shared<logic::Fruit>(initial);
+        logic::Rect initial{}; // Default rectangle for Fruit until world positions it
+        auto m = std::make_shared<logic::Fruit>(initial); // Create model instance
         attachViewToModel(m); // Connect model to view
         return m; // Return Fruit model
     }
 
     std::shared_ptr<logic::Wall> ConcreteFactory::createWall() {
-        auto m = std::make_shared<logic::Wall>(logic::Rect{});
+        auto m = std::make_shared<logic::Wall>(logic::Rect{}); // Create simple wall model with placeholder bounds
         attachViewToModel(m); // Connect model to view
         return m; // Return Wall model
     }
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::PacMan> &pacman) {
-        if (!pacman) return;
-        auto view = std::make_unique<PacManView>(pacman);
-        pacman->attach(view.get());
-        views_.add(std::move(view));
+        if (!pacman) return; // Nothing to attach if creation failed
+        auto view = std::make_unique<PacManView>(pacman); // Create view tied to this model
+        pacman->attach(view.get()); // Pacman observers events
+        views_.add(std::move(view)); // Register view so LevelState can draw it
     }
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Ghost> &) {} // Empty stub; would connect Ghost view to render window
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Coin>& coin) {
-        if (!coin) return;
-        auto view = std::make_unique<CoinView>(coin);
-        coin->attach(view.get());
-        views_.add(std::move(view));
+        if (!coin) return; // Nothing to attach if creation failed
+        auto view = std::make_unique<CoinView>(coin); // Create view tied to this model
+        coin->attach(view.get()); // Coin observers events
+        views_.add(std::move(view)); // Register view so LevelState can draw it
     }
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Fruit>& fruit) {
-        if (!fruit) return;
-        auto view = std::make_unique<FruitView>(fruit);
-        fruit->attach(view.get());
-        views_.add(std::move(view));
+        if (!fruit) return; // Fruit to attach if creation failed
+        auto view = std::make_unique<FruitView>(fruit); // Create view tied to this model
+        fruit->attach(view.get()); // Pacman observers events
+        views_.add(std::move(view)); // Register view so LevelState can draw it
     }
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Wall>& wall) {
-        if (!wall) return;
+        if (!wall) return; // Nothing to attach if creation failed
 
-        auto view = std::make_unique<WallView>(wall);
-        views_.add(std::move(view));
+        auto view = std::make_unique<WallView>(wall); // Create view tied to this model
+        views_.add(std::move(view)); // Register view so LevelState can draw it
     }
 }
