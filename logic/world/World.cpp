@@ -36,6 +36,13 @@ namespace pacman::logic {
     }
 
     void World::update(double dt) {
+        handlePacManTurning(dt); // 1) apply buffered input to Pac-Man if possible
+        updateEntities(dt); // 2) move all entities
+        updateCollisions(); // 3) build collision list
+        resolveCollisions();  // 4) resolve Pac-Man vs Wall
+    }
+
+    void World::handlePacManTurning(double dt) {
         for (auto& e : entities_) {
             if (!e || !e->active) continue; // Only active entities participate
             auto pac = std::dynamic_pointer_cast<PacMan>(e);
@@ -43,16 +50,31 @@ namespace pacman::logic {
 
             checkPacmanDesiredDirection(*pac, dt); // Try to turn Pacman if buffered direction is valid
         }
+    }
 
+    void World::updateEntities(double dt) {
         for (auto& e : entities_) { // Update all active entities
             if (e && e->active) e->update(dt);
         }
+    }
 
+    void World::setPacManDirection(Direction dir) {
+        for (auto& e : entities_) {
+            if (!e) continue;
+            auto pac = std::dynamic_pointer_cast<PacMan>(e);
+            if (pac) {
+                pac->setDesiredDirection(dir); // Store buffered input
+                break;
+            }
+        }
+    }
+
+    void World::updateCollisions() {
         lastCollisions_.clear(); // Calculate all pairs of entities that overlap after update
         const std::size_t n = entities_.size();
         for (std::size_t i = 0; i < n; i++) {
             const auto& a = entities_[i];
-            if (!a || !a->active || !a -> solid) continue; // Skip non active / non solid entities
+            if (!a || !a->active || !a->solid) continue; // Skip non active / non solid entities
             const Rect ra = a->bounds(); // Ask AABB from the logic part
             for (std::size_t j = i + 1; j < n; j++) { // i+1 prevent double checks (a,a)
                 const auto& b = entities_[j];
@@ -63,7 +85,9 @@ namespace pacman::logic {
                 }
             }
         }
+    }
 
+    void World::resolveCollisions() {
         auto resolvePacmanWall = [](PacMan& pac, const Wall& wall) {
             Rect p = pac.bounds(); // Pacman current position
             Rect w = wall.bounds(); // Wall bounds
@@ -109,17 +133,6 @@ namespace pacman::logic {
 
             if (pac && wall) {
                 resolvePacmanWall(*pac, *wall); // Clip Pacman against wall
-            }
-        }
-    }
-
-    void World::setPacManDirection(Direction dir) {
-        for (auto& e : entities_) {
-            if (!e) continue;
-            auto pac = std::dynamic_pointer_cast<PacMan>(e);
-            if (pac) {
-                pac->setDesiredDirection(dir); // Store buffered input
-                break;
             }
         }
     }

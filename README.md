@@ -15,7 +15,7 @@
 * [x] Maak **PacMan** model (positie, richting, snelheid; continue beweging). Logic beslist beweging & botsing, géén SFML. Bestand: `logic/entities/PacMan.hpp`. 
 * [x] Koppel **PacManView** in `app/views/PacManView.cpp`: kiest sprite op basis van richting; animatie mond open/dicht o.b.v. Stopwatch-tijd. Observer-update triggert redraw. 
 * [x] Laat **LevelState** (app) een World instantie creëren, ConcreteFactory injecteren en input vertalen naar “actions” (links/rechts/omhoog/omlaag), zonder logic binnen de state. Bestand: `app/states/LevelState.cpp`. 
-* [ ] Implementeer in World continue beweging: Pac-Man volgt laatste richting tot nieuwe input of botsing met wall; botsing stopt/clipt beweging. Gebruik deltaTime snelheid. 
+* [x] Implementeer in World continue beweging: Pac-Man volgt laatste richting tot nieuwe input of botsing met wall; botsing stopt/clipt beweging. Gebruik deltaTime snelheid. 
 * [ ] Voeg **Ghost** basisklasse (model) toe met subtypes (4 stuks). Opslag: center-spawn. Snelheid als parameter; gedrag per type in strategie-methode. 
 * [ ] Definieer **GhostView**: sprite per richting; animatie van “lopen”; ogen tonen locked richting. Tijdens fear mode: blauw sprite. Bestand: `app/views/GhostView.cpp`. 
 * [ ] Integreer **Observer**: Models publiceren events (tick, moved(dir), collected, died, modeChanged). Views en Score zijn observers; attach bij creatie via Factory. 

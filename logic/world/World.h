@@ -55,6 +55,11 @@ namespace pacman::logic {
     private:
         bool checkPacmanDesiredDirection(PacMan& pac, double dt);
 
+        void handlePacManTurning(double dt);
+        void updateEntities(double dt);
+        void updateCollisions();
+        void resolveCollisions();
+
     private:
         AbstractFactory* factory_{nullptr};
         std::vector<EntityPtr> entities_; // All entities
