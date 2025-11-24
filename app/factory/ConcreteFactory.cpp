@@ -5,6 +5,7 @@
 #include "../logic/entities/Coin.h"
 #include "../logic/entities/Fruit.h"
 #include "../logic/entities/PacMan.h"
+#include "../logic/entities/Ghost.h"
 #include "../logic/entities/Wall.h"
 
 #include "../views/CoinView.h"
@@ -29,7 +30,8 @@ namespace pacman::app {
     }
 
     std::shared_ptr<logic::Ghost> ConcreteFactory::createGhost(logic::GhostKind kind) {
-        auto m = /* std::make_shared<logic::Ghost>(kind, ...) */ notImplementedModel<logic::Ghost>(); // Stub creation
+        logic::Rect initial{}; // Default rectangle for Ghost until world positions it
+        auto m = std::make_shared<logic::Ghost>(initial, kind); // Create model instance
         attachViewToModel(m); // Connect model to view
         return m; // Return Ghost model
     }
@@ -61,7 +63,7 @@ namespace pacman::app {
         views_.add(std::move(view)); // Register view so LevelState can draw it
     }
 
-    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Ghost> &) {} // Empty stub; would connect Ghost view to render window
+    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Ghost> &ghost) {} // Empty stub; would connect Ghost view to render window
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Coin>& coin) {
         if (!coin) return; // Nothing to attach if creation failed

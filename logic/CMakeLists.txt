@@ -11,6 +11,8 @@ add_library(logic STATIC
         entities/Direction.h
         entities/PacMan.cpp
         entities/PacMan.h
+        entities/Ghost.cpp
+        entities/Ghost.h
         world/World.cpp
         world/World.h
         factory/AbstractFactory.h

@@ -41,7 +41,7 @@ namespace pacman::app {
         }
 
         unsigned int pickRowFor(logic::Direction dir, double t) {
-            const double speed = 8.0; // Controls how fast the mouth cycles
+            const double speed = 10.0; // Controls how fast the mouth cycles
             const double phase = std::fmod(t * speed, 4.0); // Animation phase in range [0,4)
 
             bool useClosed = (phase < 1.0);
