@@ -30,6 +30,8 @@ add_executable(pacman
         views/FruitView.h
         views/PacManView.cpp
         views/PacManView.h
+        views/GhostView.cpp
+        views/GhostView.h
         views/WallView.cpp
         views/WallView.h
 )

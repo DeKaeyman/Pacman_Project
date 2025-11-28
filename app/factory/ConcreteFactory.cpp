@@ -11,6 +11,7 @@
 #include "../views/CoinView.h"
 #include "../views/FruitView.h"
 #include "../views/PacManView.h"
+#include "../views/GhostView.h"
 #include "../views/WallView.h"
 
 #include <cassert>
@@ -63,7 +64,12 @@ namespace pacman::app {
         views_.add(std::move(view)); // Register view so LevelState can draw it
     }
 
-    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Ghost> &ghost) {} // Empty stub; would connect Ghost view to render window
+    void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Ghost> &ghost) {
+        if (!ghost) return; // Nothing to attach if creation failed
+        auto view = std::make_unique<GhostView>(ghost); // Create view tied to this model
+        ghost->attach(view.get()); // Ghost observers events
+        views_.add(std::move(view)); // Register view so LevelState can draw it
+    }
 
     void ConcreteFactory::attachViewToModel(const std::shared_ptr<logic::Coin>& coin) {
         if (!coin) return; // Nothing to attach if creation failed
