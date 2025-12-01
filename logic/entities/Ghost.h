@@ -15,7 +15,7 @@ namespace pacman::logic {
         Rect bounds() const override { return bounds_; } // Current world space bounding box
         void update(double dt) override; // Apply AI strategy + movement
 
-        void setDirection(Direction dir) noexcept { direction_ = dir; } // Force direction change
+        void setDirection(Direction dir) noexcept; // Force direction change
         Direction direction() const noexcept { return direction_; } // Get current direction
 
         void setSpeed(double s) noexcept { speed_ = s; } // Modify movement speed

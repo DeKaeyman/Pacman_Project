@@ -11,6 +11,13 @@ namespace pacman::logic {
 
     void PacMan::update(double dt) {
         if (!active) return; // Dead/Inactive pacman shouldn't move
+
+        {
+            Event tick{};
+            tick.type = EventType::Tick;
+            notify(tick);
+        }
+
         if (direction_ == Direction::None) return; // No active direction -> no movement
 
         // Unit direction vector in world space
@@ -22,6 +29,15 @@ namespace pacman::logic {
 
         bounds_.x += vx * dist; // Advance Pacman horizontally
         bounds_.y += vy * dist; // Advance Pacman vertically
+
+        MovedPayload payload{};
+        payload.pos = { bounds_.x, bounds_.y };
+        payload.size = { bounds_.w, bounds_.h };
+
+        Event moved{};
+        moved.type = EventType::Moved;
+        moved.payload = payload;
+        notify(moved);
     }
 
     void PacMan::setDesiredDirection(pacman::logic::Direction dir) noexcept {

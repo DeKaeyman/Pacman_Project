@@ -12,6 +12,12 @@ namespace pacman::logic {
     void Ghost::update(double dt) {
         if (!active) return; // Do nothing when ghost is disabled
 
+        {
+            Event tick{};
+            tick.type = EventType::Tick;
+            notify(tick);
+        }
+
         applyStrategy(dt); // Choose direction depending on ghost AI type
 
         if (direction_ == Direction::None) return; // If strategy produced no movement, stop
@@ -27,14 +33,43 @@ namespace pacman::logic {
         payload.pos = {bounds_.x, bounds_.y}; // New ghost world position
         payload.size = {bounds_.w, bounds_.h}; // Ghost bounding box size
 
-        Event e{}; // Create movement event for observers
-        e.type = EventType::Moved; // Mark it as a "moved" event
-        e.payload = payload; // Attach movement data
+        Event moved{}; // Create movement event for observers
+        moved.type = EventType::Moved; // Mark it as a "moved" event
+        moved.payload = payload; // Attach movement data
+        notify(moved);
     }
 
     void Ghost::resetToSpawn() noexcept {
         bounds_ = spawnBounds_; // Restore original spawn point
         direction_ = Direction::None; // Reset movement state
+    }
+
+    void Ghost::setDirection(Direction dir) noexcept {
+        if (direction_ == dir) return;
+        direction_ = dir;
+
+        StateChangedPayload payload{};
+        switch (direction_) {
+            case Direction::Right:
+                payload.code = 0;
+                break;
+            case Direction::Left:
+                payload.code = 1;
+                break;
+            case Direction::Up:
+                payload.code = 2;
+                break;
+            case Direction::Down:
+                payload.code = 3;
+                break;
+            default:
+                return;
+        }
+
+        Event e{};
+        e.type    = EventType::StateChanged;
+        e.payload = payload;
+        notify(e);
     }
 
     void Ghost::applyStrategy(double /*dt*/) {

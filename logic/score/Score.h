@@ -4,15 +4,20 @@
 #include <vector>
 #include <string>
 
+#include "../observer/Observer.h"
+#include "../observer/Event.h"
+
 namespace pacman::logic {
 
-    class Score {
+    class Score : Observer {
     public:
         Score() = default; // Simple score tracker
 
         void reset() noexcept { currentScore_ = 0; } // Reset player score to zero
         void add(int amount) { currentScore_ += amount; } // Add points
         int value() const noexcept { return currentScore_; } // Read current score
+
+        void onEvent(const Event& e) override;
 
         static std::vector<int> loadHighscores(const std::string& path); // Read top 5 scores from file
         static void saveHighscores(const std::string& path, const std::vector<int>& scores); // Write scores to file

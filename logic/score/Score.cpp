@@ -6,6 +6,27 @@
 
 namespace pacman::logic {
 
+    void Score::onEvent(const pacman::logic::Event &e) {
+        switch (e.type) {
+            case EventType::Collected: {
+                if (auto payload = std::get_if<CollectedPayload>(&e.payload)) {
+                    add(payload->value);
+                }
+                break;
+            }
+
+            case EventType::Tick:
+                break;
+
+            case EventType::Died:
+                break;
+
+            case EventType::Moved:
+            case EventType::StateChanged:
+                break;
+        }
+    }
+
     std::vector<int> Score::loadHighscores(const std::string &path) {
         std::vector<int> scores; // Local container for loaded scores
 
