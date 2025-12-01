@@ -8,9 +8,9 @@ namespace pacman::logic {
 
     void Score::onEvent(const pacman::logic::Event &e) {
         switch (e.type) {
-            case EventType::Collected: {
+            case EventType::Collected: { // A collectable (coin/fruit) has been picked up
                 if (auto payload = std::get_if<CollectedPayload>(&e.payload)) {
-                    add(payload->value);
+                    add(payload->value); // Increase score by the value provided in event
                 }
                 break;
             }

@@ -13,7 +13,7 @@ namespace pacman::logic {
         if (!active) return; // Dead/Inactive pacman shouldn't move
 
         {
-            Event tick{};
+            Event tick{}; // Fire a “Tick” event each frame
             tick.type = EventType::Tick;
             notify(tick);
         }
@@ -37,7 +37,8 @@ namespace pacman::logic {
         Event moved{};
         moved.type = EventType::Moved;
         moved.payload = payload;
-        notify(moved);
+
+        notify(moved); // Broadcast movement update
     }
 
     void PacMan::setDesiredDirection(pacman::logic::Direction dir) noexcept {
