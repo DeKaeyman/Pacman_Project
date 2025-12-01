@@ -25,5 +25,8 @@ namespace pacman::logic {
 
     private:
         int currentScore_{0}; // Player's current running score
+
+        double lastCollectTime_{0.0}; // Timestamp of last collected coin/fruit
+        bool hasLastCollectTime_{false}; // True once first collect happens
     };
 }

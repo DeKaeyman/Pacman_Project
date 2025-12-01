@@ -3,6 +3,7 @@
 #include "../entities/PacMan.h"
 #include "../entities/Coin.h"
 #include "../entities/Fruit.h"
+#include "../entities/Ghost.h"
 #include "../entities/Wall.h"
 
 #include <algorithm>
@@ -38,8 +39,12 @@ namespace pacman::logic {
     void World::update(double dt) {
         handlePacManTurning(dt); // 1) apply buffered input to Pac-Man if possible
         updateEntities(dt); // 2) move all entities
-        updateCollisions(); // 3) build collision list
-        resolveCollisions();  // 4) resolve Pac-Man vs Wall
+
+        updateCollisions(); // 3) hard collisions
+        resolveCollisions();
+
+        updateOverlaps(); // 4) soft overlaps
+        resolveOverlaps();
     }
 
     void World::handlePacManTurning(double dt) {
@@ -76,12 +81,36 @@ namespace pacman::logic {
             const auto& a = entities_[i];
             if (!a || !a->active || !a->solid) continue; // Skip non active / non solid entities
             const Rect ra = a->bounds(); // Ask AABB from the logic part
-            for (std::size_t j = i + 1; j < n; j++) { // i+1 prevent double checks (a,a)
+            for (std::size_t j = i + 1; j < n; j++) { // i+1 prevent double checks (a,a)=mù:
                 const auto& b = entities_[j];
                 if (!b || !b->active || !b->solid) continue;
                 const Rect rb = b->bounds();
                 if (intersects(ra, rb)) {
                     lastCollisions_.emplace_back(a->id(), b->id());
+                }
+            }
+        }
+    }
+
+    void World::updateOverlaps(float minOverlapRatio) {
+        lastOverlaps_.clear();
+        const std::size_t n = entities_.size();
+
+        for (std::size_t i = 0; i < n; ++i) {
+            const auto& a = entities_[i];
+            if (!a || !a->active) continue;
+            const Rect ra = a->bounds();
+
+            for (std::size_t j = i + 1; j < n; ++j) {
+                const auto& b = entities_[j];
+                if (!b || !b->active) continue;
+                const Rect rb = b->bounds();
+
+                if (!intersects(ra, rb)) continue;
+
+                const float ratio = overlapRatio(ra, rb);
+                if (ratio >= minOverlapRatio) {
+                    lastOverlaps_.emplace_back(a->id(), b->id());
                 }
             }
         }
@@ -123,16 +152,44 @@ namespace pacman::logic {
             Entity* b = get(idB);
             if (!a || !b) continue;
 
-            PacMan* pac = dynamic_cast<PacMan*>(a);
-            Wall* wall = dynamic_cast<Wall*>(b);
+            // Pac-Man <=> Wall
+            {
+                PacMan *pac = dynamic_cast<PacMan *>(a);
+                Wall *wall = dynamic_cast<Wall *>(b);
 
-            if (!pac || !wall) { // Try reversed order
-                pac  = dynamic_cast<PacMan*>(b);
-                wall = dynamic_cast<Wall*>(a);
+                if (!pac || !wall) { // Try reversed order
+                    pac = dynamic_cast<PacMan *>(b);
+                    wall = dynamic_cast<Wall *>(a);
+                }
+
+                if (pac && wall) {
+                    resolvePacmanWall(*pac, *wall); // Clip Pacman against wall
+                }
             }
+        }
+    }
 
-            if (pac && wall) {
-                resolvePacmanWall(*pac, *wall); // Clip Pacman against wall
+    void World::resolveOverlaps() {
+        for (const auto& [idA, idB] : lastOverlaps_) {
+            Entity* a = get(idA);
+            Entity* b = get(idB);
+            if (!a || !b) continue;
+
+            // Pac-Man <=> Coin
+            {
+                PacMan* pac = dynamic_cast<PacMan*>(a);
+                Coin*  coin = dynamic_cast<Coin*>(b);
+
+                if (!pac || !coin) { // Reverse lookup
+                    pac  = dynamic_cast<PacMan*>(b);
+                    coin = dynamic_cast<Coin*>(a);
+                }
+
+                // Pacman touching a coin -> collect it
+                if (pac && coin && coin->active) {
+                    coin->collect(); // Notify score + views
+                    coin->active = false; // Hide/remove from gameplay
+                }
             }
         }
     }
@@ -230,6 +287,14 @@ namespace pacman::logic {
                             addEntity(pac);
                         }
                         break;
+                    }
+
+                    case TileType::GhostSpawn: {
+                        auto gA = factory_->createGhost(GhostKind::A);
+                        if (gA) {
+                            gA->setBounds(r);
+                            addEntity(gA);
+                        }
                     }
 
                     default:

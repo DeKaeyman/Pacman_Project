@@ -1,5 +1,6 @@
 // logic/score/Score.cpp
 #include "Score.h"
+#include "../utils/Stopwatch.h"
 
 #include <fstream>
 #include <algorithm>
@@ -10,7 +11,26 @@ namespace pacman::logic {
         switch (e.type) {
             case EventType::Collected: { // A collectable (coin/fruit) has been picked up
                 if (auto payload = std::get_if<CollectedPayload>(&e.payload)) {
-                    add(payload->value); // Increase score by the value provided in event
+
+                    auto& sw = Stopwatch::getInstance(); // Global game timer
+                    double now = sw.elapsed(); // Moment of this pickup
+
+                    double multiplier = 1.0; // Default value
+
+                    if (hasLastCollectTime_) { // If we previously collected something, give a bonus
+                        double dt = now - lastCollectTime_; // time between pickups
+                        if (dt < 0.5) multiplier = 4.0; // Extreme speed chain
+                        else if (dt < 1.0) multiplier = 3.0; // Very fast chain
+                        else if (dt < 2.0) multiplier = 2.0; // Normal chain
+                    }
+
+                    int base = payload->value; // Score value from model
+                    int bonusScore = static_cast<int>(base * multiplier); // Apply chain multiplier
+
+                    add(bonusScore); // Update running score
+
+                    lastCollectTime_ = now; // Remember when this pickup occurred
+                    hasLastCollectTime_ = true; // Mark that chain logic is active
                 }
                 break;
             }

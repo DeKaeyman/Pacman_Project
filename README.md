@@ -19,7 +19,7 @@
 * [x] Voeg **Ghost** basisklasse (model) toe met subtypes (4 stuks). Opslag: center-spawn. Snelheid als parameter; gedrag per type in strategie-methode. 
 * [x] Definieer **GhostView**: sprite per richting; animatie van “lopen”; ogen tonen locked richting. Tijdens fear mode: blauw sprite. Bestand: `app/views/GhostView.cpp`. 
 * [x] Integreer **Observer**: Models publiceren events (tick, moved(dir), collected, died, modeChanged). Views en Score zijn observers; attach bij creatie via Factory. 
-* [ ] Plaats **coins** gelijkmatig volgens layout; World detecteert overlap Pac-Man ↔ coin en verstuurt `CoinCollected`. Score verhoogt met tijdsafhankelijke bonus (snelle ketens = meer). 
+* [x] Plaats **coins** gelijkmatig volgens layout; World detecteert overlap Pac-Man ↔ coin en verstuurt `CoinCollected`. Score verhoogt met tijdsafhankelijke bonus (snelle ketens = meer). 
 * [ ] Toon **HUD** (app): huidige score linksboven, resterende levens, level-nummer. Bestand: `app/ui/Hud.cpp`. 
 * [ ] Implementeer **Score** logica: basis-decrement over tijd, coins vergroten score met factor gebaseerd op tijd sinds laatste coin; fruits & ghosts geven bonus; score gaat mee naar volgende level. 
 * [ ] Zet **Fruit** posities (linksboven en rechtsonder). World detecteert FruitCollected → zet ghost-modus naar **fear** met timer; laat ghosts trager gaan en hun richting omkeren. 

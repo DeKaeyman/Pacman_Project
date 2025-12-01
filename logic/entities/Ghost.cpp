@@ -5,7 +5,7 @@
 namespace pacman::logic {
 
     Ghost::Ghost(const pacman::logic::Rect &startBounds, pacman::logic::GhostKind kind, double speed) : bounds_(startBounds), spawnBounds_(startBounds), direction_(Direction::None), speed_(speed), kind_(kind) {
-        solid = true; // Ghost collide with pacman/walls
+        solid = false; // Ghost collide with pacman/walls
         active = true; // Ghost starts alive/enabled
     }
 
