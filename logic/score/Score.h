@@ -9,7 +9,7 @@
 
 namespace pacman::logic {
 
-    class Score : Observer {
+    class Score : public Observer {
     public:
         Score() = default; // Simple score tracker
 

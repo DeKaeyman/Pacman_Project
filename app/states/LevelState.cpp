@@ -4,6 +4,9 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#include "../logic/entities/Coin.h"
+#include "../logic/entities/Fruit.h"
+
 #include "../factory/ConcreteFactory.h"
 #include "../logic/world/World.h"
 
@@ -11,8 +14,13 @@ namespace pacman::app {
 
     LevelState::LevelState(pacman::app::StateManager &m) : State(m), tileMap_() { // Construct LevelState and init tilemap_
         factory_ = std::make_unique<ConcreteFactory>(); // Create app side factory
+        factory_->setScoreObserver(&score_);
+
         world_ = std::make_unique<pacman::logic::World>(*factory_); // Create world and inject abstract factory
         world_->loadLevel(tileMap_); // Build entities based on tile layout
+
+        hudFont_.loadFromFile("assets/fonts/arial.ttf"); // Load the font for the hud text
+        hud_ = std::make_unique<Hud>(score_, *world_, hudFont_); // Create app side hud
     }
 
     void LevelState::handleEvent(const sf::Event& e) {
@@ -55,6 +63,10 @@ namespace pacman::app {
         if (factory_) {
             factory_->setWindow(w); // Provide render window to factory/views
             factory_->views().drawAll(w); // Draw all registered views
+        }
+
+        if (hud_) {
+            hud_->draw(w);
         }
     }
 }

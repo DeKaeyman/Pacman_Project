@@ -61,6 +61,7 @@ namespace pacman::app {
         if (!pacman) return; // Nothing to attach if creation failed
         auto view = std::make_unique<PacManView>(pacman); // Create view tied to this model
         pacman->attach(view.get()); // Pacman observers events
+        if (scoreObserver_) pacman->attach(scoreObserver_);
         views_.add(std::move(view)); // Register view so LevelState can draw it
     }
 
@@ -68,6 +69,7 @@ namespace pacman::app {
         if (!ghost) return; // Nothing to attach if creation failed
         auto view = std::make_unique<GhostView>(ghost); // Create view tied to this model
         ghost->attach(view.get()); // Ghost observers events
+        if (scoreObserver_) ghost->attach(scoreObserver_);
         views_.add(std::move(view)); // Register view so LevelState can draw it
     }
 
@@ -75,6 +77,7 @@ namespace pacman::app {
         if (!coin) return; // Nothing to attach if creation failed
         auto view = std::make_unique<CoinView>(coin); // Create view tied to this model
         coin->attach(view.get()); // Coin observers events
+        if (scoreObserver_) coin->attach(scoreObserver_);
         views_.add(std::move(view)); // Register view so LevelState can draw it
     }
 
@@ -82,6 +85,7 @@ namespace pacman::app {
         if (!fruit) return; // Fruit to attach if creation failed
         auto view = std::make_unique<FruitView>(fruit); // Create view tied to this model
         fruit->attach(view.get()); // Pacman observers events
+        if (scoreObserver_) fruit->attach(scoreObserver_);
         views_.add(std::move(view)); // Register view so LevelState can draw it
     }
 
