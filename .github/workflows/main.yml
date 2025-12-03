@@ -1,0 +1,37 @@
+# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
+name: Build game logic without SFML
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Debug
+  SOURCE_DIR: logic #<------ DIT AANPASSEN MOET WIJZEN NAAR DE DIRECTORY MET DAARIN DE LOGIC CMAKELIST
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure CMake for 'logic'
+      # Configure CMake in a 'build' subdirectory, using the 'logic' directory as the source.
+      run: cmake -B ${{github.workspace}}/build -S ${{github.workspace}}/${{env.SOURCE_DIR}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build 'logic'
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Test 'logic'
+      working-directory: ${{github.workspace}}/build
+      # Execute tests defined by the CMake configuration.
+      run: ctest -C ${{env.BUILD_TYPE}}
