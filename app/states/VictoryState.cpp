@@ -1,4 +1,4 @@
 // VictoryState.cpp
 #include "VictoryState.h"
 
-namespace pacman::app {} // noop
+namespace pacman::app {} // namespace pacman::app

@@ -4,8 +4,8 @@
 
 namespace pacman::app {
 
-    class VictoryState : public State {
-    public:
-        using State::State;
-    };
-}
+class VictoryState : public State {
+public:
+  using State::State;
+};
+} // namespace pacman::app

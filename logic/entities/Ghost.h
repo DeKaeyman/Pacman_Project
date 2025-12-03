@@ -1,40 +1,51 @@
 // logic/entities/Ghost.h
 #pragma once
 
-#include "Entity.h"
-#include "observer/Subject.h"
 #include "Direction.h"
+#include "Entity.h"
 #include "factory/AbstractFactory.h"
+#include "observer/Subject.h"
 
 namespace pacman::logic {
 
-    class Ghost : public Entity, public Subject { // Ghost is both an Entity and event publisher
-    public:
-        Ghost(const Rect& startBounds, GhostKind kind, double speed = 0.3); // Create a ghost, stores spawn position, movement speed, and ghost type
+class Ghost : public Entity,
+              public Subject { // Ghost is both an Entity and event publisher
+public:
+  Ghost(const Rect &startBounds, GhostKind kind,
+        double speed = 0.3); // Create a ghost, stores spawn position, movement
+                             // speed, and ghost type
 
-        Rect bounds() const override { return bounds_; } // Current world space bounding box
-        void update(double dt) override; // Apply AI strategy + movement
+  Rect bounds() const override {
+    return bounds_;
+  }                                // Current world space bounding box
+  void update(double dt) override; // Apply AI strategy + movement
 
-        void setDirection(Direction dir) noexcept; // Force direction change
-        Direction direction() const noexcept { return direction_; } // Get current direction
+  void setDirection(Direction dir) noexcept; // Force direction change
+  Direction direction() const noexcept {
+    return direction_;
+  } // Get current direction
 
-        void setSpeed(double s) noexcept { speed_ = s; } // Modify movement speed
-        double speed() const noexcept { return speed_; } // Read movement speed
+  void setSpeed(double s) noexcept { speed_ = s; } // Modify movement speed
+  double speed() const noexcept { return speed_; } // Read movement speed
 
-        GhostKind kind() const noexcept { return kind_; } // Which ghost kind
+  GhostKind kind() const noexcept { return kind_; } // Which ghost kind
 
-        void setBounds(const Rect& r) noexcept { bounds_ = r; } // Reposition/resize ghost
+  void setBounds(const Rect &r) noexcept {
+    bounds_ = r;
+  } // Reposition/resize ghost
 
-        const Rect& spawnBounds() const noexcept { return spawnBounds_; } // Original spawn location
-        void resetToSpawn() noexcept; // Reset ghost after being eaten
+  const Rect &spawnBounds() const noexcept {
+    return spawnBounds_;
+  }                             // Original spawn location
+  void resetToSpawn() noexcept; // Reset ghost after being eaten
 
-    private:
-        void applyStrategy(double dt); // Placeholder for AI logic decisions
+private:
+  void applyStrategy(double dt); // Placeholder for AI logic decisions
 
-        Rect bounds_{}; // Current position and size in world space
-        Rect spawnBounds_{}; // Original spawn position
-        Direction direction_{Direction::None}; // Active direction ghost is moving in
-        double speed_{0.0}; // Movement speed per second
-        GhostKind kind_{GhostKind::A}; // Ghost type used for selecting AI behavior
-    };
-}
+  Rect bounds_{};      // Current position and size in world space
+  Rect spawnBounds_{}; // Original spawn position
+  Direction direction_{Direction::None}; // Active direction ghost is moving in
+  double speed_{0.0};                    // Movement speed per second
+  GhostKind kind_{GhostKind::A}; // Ghost type used for selecting AI behavior
+};
+} // namespace pacman::logic

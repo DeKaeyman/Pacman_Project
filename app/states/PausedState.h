@@ -4,11 +4,11 @@
 
 namespace pacman::app {
 
-    class PausedState : public State {
-    public:
-        using State::State;
+class PausedState : public State {
+public:
+  using State::State;
 
-        void handleEvent(const sf::Event& e) override;
-        void draw(sf::RenderWindow& w) override;
-    };
-}
+  void handleEvent(const sf::Event &e) override;
+  void draw(sf::RenderWindow &w) override;
+};
+} // namespace pacman::app
