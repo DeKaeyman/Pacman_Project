@@ -6,9 +6,9 @@ namespace pacman::app {
 
 class GameOverState : public State {
 public:
-  using State::State;
+    using State::State;
 
-  void handleEvent(const sf::Event &e) override;
-  void draw(sf::RenderWindow &w) override;
+    void handleEvent(const sf::Event& e) override;
+    void draw(sf::RenderWindow& w) override;
 };
 } // namespace pacman::app

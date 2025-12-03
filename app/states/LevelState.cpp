@@ -12,65 +12,61 @@
 
 namespace pacman::app {
 
-LevelState::LevelState(pacman::app::StateManager &m)
-    : State(m), tileMap_() { // Construct LevelState and init tilemap_
-  factory_ = std::make_unique<ConcreteFactory>(); // Create app side factory
-  factory_->setScoreObserver(&score_);
+LevelState::LevelState(pacman::app::StateManager& m) : State(m), tileMap_() { // Construct LevelState and init tilemap_
+    factory_ = std::make_unique<ConcreteFactory>();                           // Create app side factory
+    factory_->setScoreObserver(&score_);
 
-  world_ = std::make_unique<pacman::logic::World>(
-      *factory_);              // Create world and inject abstract factory
-  world_->loadLevel(tileMap_); // Build entities based on tile layout
+    world_ = std::make_unique<pacman::logic::World>(*factory_); // Create world and inject abstract factory
+    world_->loadLevel(tileMap_);                                // Build entities based on tile layout
 
-  hudFont_.loadFromFile(
-      "assets/fonts/arial.ttf"); // Load the font for the hud text
-  hud_ =
-      std::make_unique<Hud>(score_, *world_, hudFont_); // Create app side hud
+    hudFont_.loadFromFile("assets/fonts/arial.ttf");         // Load the font for the hud text
+    hud_ = std::make_unique<Hud>(score_, *world_, hudFont_); // Create app side hud
 }
 
-void LevelState::handleEvent(const sf::Event &e) {
-  if (e.type == sf::Event::KeyPressed) { // Only react to key press events
-    using sf::Keyboard;
-    switch (e.key.code) {
-    case Keyboard::Up:
-      desiredDirection_ = pacman::logic::Direction::Up;
-      break;
-    case Keyboard::Down:
-      desiredDirection_ = pacman::logic::Direction::Down;
-      break;
-    case Keyboard::Left:
-      desiredDirection_ = pacman::logic::Direction::Left;
-      break;
-    case Keyboard::Right:
-      desiredDirection_ = pacman::logic::Direction::Right;
-      break;
-    default:
-      break;
+void LevelState::handleEvent(const sf::Event& e) {
+    if (e.type == sf::Event::KeyPressed) { // Only react to key press events
+        using sf::Keyboard;
+        switch (e.key.code) {
+        case Keyboard::Up:
+            desiredDirection_ = pacman::logic::Direction::Up;
+            break;
+        case Keyboard::Down:
+            desiredDirection_ = pacman::logic::Direction::Down;
+            break;
+        case Keyboard::Left:
+            desiredDirection_ = pacman::logic::Direction::Left;
+            break;
+        case Keyboard::Right:
+            desiredDirection_ = pacman::logic::Direction::Right;
+            break;
+        default:
+            break;
+        }
     }
-  }
 }
 
 void LevelState::update(double dt) {
-  if (world_) { // Only update if world exists
-    if (desiredDirection_ != pacman::logic::Direction::None) {
-      world_->setPacManDirection(desiredDirection_);
-    }
+    if (world_) { // Only update if world exists
+        if (desiredDirection_ != pacman::logic::Direction::None) {
+            world_->setPacManDirection(desiredDirection_);
+        }
 
-    world_->update(dt); // Advance game simulation by dt
-  }
+        world_->update(dt); // Advance game simulation by dt
+    }
 }
 
-void LevelState::draw(sf::RenderWindow &w) {
-  const auto size = w.getSize(); // Read current window size
-  windowWidth_ = size.x;         // Cache width
-  windowHeight_ = size.y;        // Cache height
+void LevelState::draw(sf::RenderWindow& w) {
+    const auto size = w.getSize(); // Read current window size
+    windowWidth_ = size.x;         // Cache width
+    windowHeight_ = size.y;        // Cache height
 
-  if (factory_) {
-    factory_->setWindow(w);       // Provide render window to factory/views
-    factory_->views().drawAll(w); // Draw all registered views
-  }
+    if (factory_) {
+        factory_->setWindow(w);       // Provide render window to factory/views
+        factory_->views().drawAll(w); // Draw all registered views
+    }
 
-  if (hud_) {
-    hud_->draw(w);
-  }
+    if (hud_) {
+        hud_->draw(w);
+    }
 }
 } // namespace pacman::app

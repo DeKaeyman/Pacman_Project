@@ -3,8 +3,8 @@
 
 namespace pacman::app {
 
-void PausedState::handleEvent(const sf::Event &e) {}
+void PausedState::handleEvent(const sf::Event& e) {}
 
-void PausedState::draw(sf::RenderWindow &w) {}
+void PausedState::draw(sf::RenderWindow& w) {}
 
 } // namespace pacman::app

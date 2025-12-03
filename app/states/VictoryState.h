@@ -6,6 +6,6 @@ namespace pacman::app {
 
 class VictoryState : public State {
 public:
-  using State::State;
+    using State::State;
 };
 } // namespace pacman::app

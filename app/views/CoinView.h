@@ -10,23 +10,19 @@ namespace pacman::app {
 
 class CoinView : public View {
 public:
-  explicit CoinView(const std::shared_ptr<pacman::logic::Coin>
-                        &model); // Stores model and sets up sprite
+    explicit CoinView(const std::shared_ptr<pacman::logic::Coin>& model); // Stores model and sets up sprite
 
-  void draw(sf::RenderWindow &window)
-      override; // Draws the coin using world -> pixel convertion
-  void onEvent(const pacman::logic::Event &e)
-      override; // Responds to coin collection events
+    void draw(sf::RenderWindow& window) override;         // Draws the coin using world -> pixel convertion
+    void onEvent(const pacman::logic::Event& e) override; // Responds to coin collection events
 
 private:
-  std::shared_ptr<pacman::logic::Coin>
-      model_;          // Logical model this view represents
-  sf::Sprite sprite_;  // Visual sprite for the Coin
-  bool visible_{true}; // Whether this coin should be drawn
+    std::shared_ptr<pacman::logic::Coin> model_; // Logical model this view represents
+    sf::Sprite sprite_;                          // Visual sprite for the Coin
+    bool visible_{true};                         // Whether this coin should be drawn
 
-  static sf::Texture texture_; // Shared sprite sheet
-  static bool textureLoaded_;  // Tracks if texture_ has been loaded
+    static sf::Texture texture_; // Shared sprite sheet
+    static bool textureLoaded_;  // Tracks if texture_ has been loaded
 
-  static void ensureTextureLoaded(); // Lazy loader for texture_
+    static void ensureTextureLoaded(); // Lazy loader for texture_
 };
 } // namespace pacman::app
