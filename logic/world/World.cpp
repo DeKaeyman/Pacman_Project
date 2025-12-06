@@ -212,6 +212,22 @@ void World::resolveOverlaps() {
                 coin->active = false; // Hide/remove from gameplay
             }
         }
+
+        // Pac-Man <=> Fruit
+        {
+            PacMan* pac   = dynamic_cast<PacMan*>(a);
+            Fruit*  fruit = dynamic_cast<Fruit*>(b);
+
+            if (!pac || !fruit) { // Reverse lookup
+                pac   = dynamic_cast<PacMan*>(b);
+                fruit = dynamic_cast<Fruit*>(a);
+            }
+
+            if (pac && fruit && fruit->active) {
+                fruit->collect(); // Notify score + views
+                fruit->active = false; // Hide/remove from gameplay
+            }
+        }
     }
 }
 

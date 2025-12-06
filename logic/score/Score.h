@@ -13,7 +13,7 @@ class Score : public Observer {
 public:
     Score() = default; // Simple score tracker
 
-    void reset() noexcept { currentScore_ = 0; }         // Reset player score to zero
+    void reset() noexcept;                               // Reset player score to zero
     void add(int amount) { currentScore_ += amount; }    // Add points
     int value() const noexcept { return currentScore_; } // Read current score
 
@@ -27,8 +27,13 @@ public:
 
 private:
     int currentScore_{0}; // Player's current running score
-
-    double lastCollectTime_{0.0};    // Timestamp of last collected coin/fruit
+    double lastCollectTime_{0.0}; // Timestamp of last collected coin/fruit
     bool hasLastCollectTime_{false}; // True once first collect happens
+
+    // Basis-score-decrement over time
+    double lastTickTime_{0.0}; // Last time we pressed a tick
+    bool hasLastTickTime_{false}; // Only be active after first tick
+    double decayAccumulator_{0.0}; // Fractions that do not lead tot full points
+    double decayRatePerSecond_{1.0}; // Amount of points that disappear
 };
 } // namespace pacman::logic
