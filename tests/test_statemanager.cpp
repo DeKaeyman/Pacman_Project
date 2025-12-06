@@ -10,8 +10,8 @@ struct DummyState : State { // Fake state that counts actions
     using State::State;
     int events{0}, updates{0}, draws{0};
     void handleEvent(const sf::Event&) override { ++events; } // Count event calls
-    void update(double) override { ++updates; }        // Count updates
-    void draw(sf::RenderWindow&) override { ++draws; } // Would draw if called
+    void update(double) override { ++updates; }               // Count updates
+    void draw(sf::RenderWindow&) override { ++draws; }        // Would draw if called
 };
 
 struct TrackingFactories { // Keeps track of the created states by ID

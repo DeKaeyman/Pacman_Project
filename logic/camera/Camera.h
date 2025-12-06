@@ -18,7 +18,7 @@ public:
 
     void setViewport(int pixelWidth, int pixelHeight); // Update the viewport size
 
-    int width() const noexcept { return width_; }; // Current viewport width in pixels
+    int width() const noexcept { return width_; };   // Current viewport width in pixels
     int height() const noexcept { return height_; }; // Current viewport height in pixels
 
     std::pair<float, float> worldToPixel(float wx,
