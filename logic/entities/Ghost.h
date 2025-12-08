@@ -21,9 +21,9 @@ public:
                                // speed, and ghost type
 
     Rect bounds() const override { return bounds_; } // Current world space bounding box
-    void update(double dt) override; // Apply AI strategy + movement
+    void update(double dt) override;                 // Apply AI strategy + movement
 
-    void setDirection(Direction dir) noexcept; // Force direction change
+    void setDirection(Direction dir) noexcept;                  // Force direction change
     Direction direction() const noexcept { return direction_; } // Get current direction
 
     void setSpeed(double s) noexcept { speed_ = s; } // Modify movement speed
@@ -34,7 +34,7 @@ public:
     void setBounds(const Rect& r) noexcept { bounds_ = r; } // Reposition/resize ghost
 
     const Rect& spawnBounds() const noexcept { return spawnBounds_; } // Original spawn location
-    void resetToSpawn() noexcept; // Reset ghost after being eaten
+    void resetToSpawn() noexcept;                                     // Reset ghost after being eaten
 
     GhostMode mode() const noexcept { return mode_; }
     bool isInFearMode() const noexcept { return mode_ == GhostMode::Fear; } // Check if the ghost is in fear mode

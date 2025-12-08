@@ -82,7 +82,7 @@ public:
 
     const std::vector<EntityPtr>& entities() const { return entities_; } // For iterating entities
 
-    void loadLevel(const TileMap& map); // Load a new level layout into the world.
+    void loadLevel(const TileMap& map);                          // Load a new level layout into the world.
     const TileMap& tileMap() const noexcept { return tileMap_; } // Access the current tile map for read only queries
 
     void setPacManDirection(Direction dir);

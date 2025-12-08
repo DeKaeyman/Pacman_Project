@@ -18,64 +18,65 @@ void Score::reset() noexcept {
 
 void Score::onEvent(const pacman::logic::Event& e) {
     switch (e.type) {
-        case EventType::Collected: { // A collectable (coin/fruit) has been picked up
-            if (auto payload = std::get_if<CollectedPayload>(&e.payload)) {
+    case EventType::Collected: { // A collectable (coin/fruit) has been picked up
+        if (auto payload = std::get_if<CollectedPayload>(&e.payload)) {
 
-                auto &sw = Stopwatch::getInstance(); // Global game timer
-                double now = sw.elapsed();           // Moment of this pickup
+            auto& sw = Stopwatch::getInstance(); // Global game timer
+            double now = sw.elapsed();           // Moment of this pickup
 
-                double multiplier = 1.0; // Default value
+            double multiplier = 1.0; // Default value
 
-                if (hasLastCollectTime_) {              // If we previously collected something, give a
-                    // bonus
-                    double dt = now - lastCollectTime_; // time between pickups
-                    if (dt < 0.5)
-                        multiplier = 4.0; // Extreme speed chain
-                    else if (dt < 1.0)
-                        multiplier = 3.0; // Very fast chain
-                    else if (dt < 2.0)
-                        multiplier = 2.0; // Normal chain
-                }
-
-                int base = payload->value;                            // Score value from model
-                int bonusScore = static_cast<int>(base * multiplier); // Apply chain multiplier
-
-                add(bonusScore); // Update running score
-
-                lastCollectTime_ = now;     // Remember when this pickup occurred
-                hasLastCollectTime_ = true; // Mark that chain logic is active
+            if (hasLastCollectTime_) { // If we previously collected something, give a
+                // bonus
+                double dt = now - lastCollectTime_; // time between pickups
+                if (dt < 0.5)
+                    multiplier = 4.0; // Extreme speed chain
+                else if (dt < 1.0)
+                    multiplier = 3.0; // Very fast chain
+                else if (dt < 2.0)
+                    multiplier = 2.0; // Normal chain
             }
+
+            int base = payload->value;                            // Score value from model
+            int bonusScore = static_cast<int>(base * multiplier); // Apply chain multiplier
+
+            add(bonusScore); // Update running score
+
+            lastCollectTime_ = now;     // Remember when this pickup occurred
+            hasLastCollectTime_ = true; // Mark that chain logic is active
+        }
+        break;
+    }
+
+    case EventType::Tick: {
+        auto& sw = Stopwatch::getInstance(); // Global timer to measure passing time
+        double now = sw.elapsed();           // Current timestamp since game start
+
+        if (!hasLastTickTime_) {     // First tick ever -> initialize timer only
+            lastTickTime_ = now;     // Store the moment this tick occurred
+            hasLastTickTime_ = true; // Mark that decay timing is active
             break;
         }
 
-        case EventType::Tick: {
-            auto &sw = Stopwatch::getInstance(); // Global timer to measure passing time
-            double now = sw.elapsed(); // Current timestamp since game start
-
-            if (!hasLastTickTime_) { // First tick ever -> initialize timer only
-                lastTickTime_ = now; // Store the moment this tick occurred
-                hasLastTickTime_ = true; // Mark that decay timing is active
-                break;
-            }
-
-            double dt = now - lastTickTime_; // Time passed since previous tick
-            if (dt <= 0.0) { // Avoid negative/zero dt
-                break;
-            }
-
-            lastTickTime_ = now; // Advance decay timer
-
-            decayAccumulator_ += decayRatePerSecond_ * dt; // Add score decay amount scaled by real elapsed time
-
-            int wholePoints = static_cast<int>(decayAccumulator_);
-            if (wholePoints > 0) { // Only apply decay in whole point chunks
-                decayAccumulator_ -= wholePoints; // Remove processed fraction
-
-                currentScore_ -= wholePoints; // Subtract score decay
-                if (currentScore_ < 0) currentScore_ = 0; // Prevent negative score
-            }
+        double dt = now - lastTickTime_; // Time passed since previous tick
+        if (dt <= 0.0) {                 // Avoid negative/zero dt
             break;
         }
+
+        lastTickTime_ = now; // Advance decay timer
+
+        decayAccumulator_ += decayRatePerSecond_ * dt; // Add score decay amount scaled by real elapsed time
+
+        int wholePoints = static_cast<int>(decayAccumulator_);
+        if (wholePoints > 0) {                // Only apply decay in whole point chunks
+            decayAccumulator_ -= wholePoints; // Remove processed fraction
+
+            currentScore_ -= wholePoints; // Subtract score decay
+            if (currentScore_ < 0)
+                currentScore_ = 0; // Prevent negative score
+        }
+        break;
+    }
 
     case EventType::Died:
         break;

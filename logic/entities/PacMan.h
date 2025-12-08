@@ -12,13 +12,13 @@ public:
     PacMan(const Rect& startBounds, double speed = 0.4f);
 
     Rect bounds() const override { return bounds_; } // Current bounding box of Pacman
-    void update(double dt) override;           // Continuous movement based on current direction and speed
-    void setDirection(Direction dir) noexcept; // Set the current movement direction
+    void update(double dt) override;                 // Continuous movement based on current direction and speed
+    void setDirection(Direction dir) noexcept;       // Set the current movement direction
     Direction direction() const noexcept { return direction_; } // Get current movement direction
     void setDesiredDirection(Direction dir) noexcept;
     Direction desiredDirection() const noexcept { return desiredDirection_; }
-    void setSpeed(double s) noexcept { speed_ = s; } // Set movement speed
-    double speed() const noexcept { return speed_; } // Get movement speed
+    void setSpeed(double s) noexcept { speed_ = s; }        // Set movement speed
+    double speed() const noexcept { return speed_; }        // Get movement speed
     void setBounds(const Rect& r) noexcept { bounds_ = r; } // Directly set the bounding box
 
 private:

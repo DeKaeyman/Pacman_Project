@@ -15,7 +15,7 @@ public:
     virtual ~State() = default;                      // Virtual destructor needed
 
     virtual void handleEvent(const sf::Event&) {} // Basic behavior
-    virtual void update(double /*dt*/) {} // Gets called per frame for animations/timers and so on
+    virtual void update(double /*dt*/) {}         // Gets called per frame for animations/timers and so on
     virtual void draw(sf::RenderWindow& /*w*/) {} // Gets called to draw the state itself
 
 protected:
