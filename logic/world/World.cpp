@@ -51,6 +51,8 @@ void World::update(double dt) {
 
     updateOverlaps(); // 4) soft overlaps
     resolveOverlaps();
+
+    updateFearTimer(dt);
 }
 
 void World::handlePacManTurning(double dt) {
@@ -226,6 +228,8 @@ void World::resolveOverlaps() {
             if (pac && fruit && fruit->active) {
                 fruit->collect(); // Notify score + views
                 fruit->active = false; // Hide/remove from gameplay
+
+                startFearMode();
             }
         }
     }
@@ -349,5 +353,40 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
 
     snapshotLevelTemplate(); // Store current entity setup as "initial state" for
                              // reset
+}
+
+void World::startFearMode() {
+    fearActive_ = true; // Mark fear mode as globally active
+    fearTimer_ = fearDuration_; // Reset countdown timer
+
+    for (auto& e : entities_) {
+        if (!e || !e->active) continue; // Ignore inactive entities
+        auto ghost = std::dynamic_pointer_cast<Ghost>(e);
+        if (!ghost) continue; // Only apply to ghosts
+
+        ghost->setMode(GhostMode::Fear); // Switch ghost to blue/slow mode immediately
+    }
+}
+
+void World::stopFearMode() {
+    fearActive_ = false; // Fear mode no longer active
+    fearTimer_  = 0.0; // Timer cleared
+
+    for (auto& e : entities_) {
+        if (!e || !e->active) continue;
+        auto ghost = std::dynamic_pointer_cast<Ghost>(e);
+        if (!ghost) continue;
+
+        ghost->setMode(GhostMode::Chase); // Restore normal behavior & appearance
+    }
+}
+
+void World::updateFearTimer(double dt) {
+    if (!fearActive_) return; // No need to track timer if not afraid
+
+    fearTimer_ -= dt; // Decrease remaining fear duration
+    if (fearTimer_ <= 0.0) { // Blue mode finished
+        stopFearMode(); // Restore ghosts to normal state
+    }
 }
 } // namespace pacman::logic

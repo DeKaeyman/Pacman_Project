@@ -8,6 +8,11 @@
 
 namespace pacman::logic {
 
+enum class GhostMode {
+    Chase,
+    Fear
+};
+
 class Ghost : public Entity,
               public Subject { // Ghost is both an Entity and event publisher
 public:
@@ -31,6 +36,10 @@ public:
     const Rect& spawnBounds() const noexcept { return spawnBounds_; } // Original spawn location
     void resetToSpawn() noexcept; // Reset ghost after being eaten
 
+    GhostMode mode() const noexcept { return mode_; }
+    bool isInFearMode() const noexcept { return mode_ == GhostMode::Fear; } // Check if the ghost is in fear mode
+    void setMode(GhostMode m) noexcept;
+
 private:
     void applyStrategy(double dt); // Placeholder for AI logic decisions
 
@@ -39,5 +48,7 @@ private:
     Direction direction_{Direction::None}; // Active direction ghost is moving in
     double speed_{0.0};                    // Movement speed per second
     GhostKind kind_{GhostKind::A};         // Ghost type used for selecting AI behavior
+    GhostMode mode_{GhostMode::Chase};     // Ghost mode used for selecting AI behavior
+    double baseSpeed_{0.0};
 };
 } // namespace pacman::logic

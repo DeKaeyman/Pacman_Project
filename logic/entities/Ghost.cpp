@@ -5,7 +5,7 @@
 namespace pacman::logic {
 
 Ghost::Ghost(const pacman::logic::Rect& startBounds, pacman::logic::GhostKind kind, double speed)
-    : bounds_(startBounds), spawnBounds_(startBounds), direction_(Direction::None), speed_(speed), kind_(kind) {
+    : bounds_(startBounds), spawnBounds_(startBounds), direction_(Direction::None), speed_(speed), kind_(kind), mode_(GhostMode::Chase) {
     solid = false; // Ghost collide with pacman/walls
     active = true; // Ghost starts alive/enabled
 }
@@ -48,11 +48,10 @@ void Ghost::resetToSpawn() noexcept {
 }
 
 void Ghost::setDirection(Direction dir) noexcept {
-    if (direction_ == dir)
-        return;
-    direction_ = dir;
+    if (direction_ == dir) return; // Ignore redundant direction changes
+    direction_ = dir; // Ignore redundant direction changes
 
-    StateChangedPayload payload{};
+    StateChangedPayload payload{}; // Encode direction as an integer for the view layer
     switch (direction_) {
     case Direction::Right:
         payload.code = 0;
@@ -70,10 +69,10 @@ void Ghost::setDirection(Direction dir) noexcept {
         return;
     }
 
-    Event e{};
+    Event e{}; // Notify observers that direction changed
     e.type = EventType::StateChanged;
     e.payload = payload;
-    notify(e);
+    notify(e); // Trigger animation updates in GhostView
 }
 
 void Ghost::applyStrategy(double /*dt*/) {
@@ -89,4 +88,35 @@ void Ghost::applyStrategy(double /*dt*/) {
         break;
     }
 }
+
+void Ghost::setMode(pacman::logic::GhostMode m) noexcept {
+    if (mode_ == m) return; // Ignore if already in that mode
+
+    mode_ = m; // Apply new behavioral mode
+
+    if (mode_ == GhostMode::Fear) {
+        // Reverse current direction instantly (classic Pac-Man behavior)
+        switch (direction_) {
+            case Direction::Left:  direction_ = Direction::Right; break;
+            case Direction::Right: direction_ = Direction::Left;  break;
+            case Direction::Up:    direction_ = Direction::Down;  break;
+            case Direction::Down:  direction_ = Direction::Up;    break;
+            default: break;
+        }
+
+        speed_ = baseSpeed_ * 0.6; // Move slower while afraid
+    } else {
+        speed_ = baseSpeed_; // Restore default speed
+    }
+
+    StateChangedPayload payload{}; // Tell GhostView to switch appearance
+    payload.code = (mode_ == GhostMode::Fear) ? 100 : 101; // 100 → enter fear mode, 101 → exit fear mode
+
+    Event e{};
+    e.type = EventType::StateChanged;
+    e.payload = payload;
+
+    notify(e);
+}
+
 } // namespace pacman::logic

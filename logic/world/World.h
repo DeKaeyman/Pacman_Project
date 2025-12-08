@@ -71,7 +71,7 @@ public:
 
     const std::vector<std::pair<EntityId, EntityId>>& lastCollisions() const {
         return lastCollisions_;
-    } // exports all collisions from last update moment
+    } // exports all collisions from last update moment²&
 
     // Level flow
     void resetLevel();   // reset to startstate
@@ -88,15 +88,19 @@ public:
     void setPacManDirection(Direction dir);
 
 private:
-    bool checkPacmanDesiredDirection(PacMan& pac, double dt);
+    bool checkPacmanDesiredDirection(PacMan& pac, double dt); // Check if Pac-Man can turn into his buffered desired direction
 
-    void handlePacManTurning(double dt);
-    void updateEntities(double dt);
-    void updateCollisions();
-    void resolveCollisions();
+    void handlePacManTurning(double dt); // Evaluate buffered turning requests BEFORE movement each frame
+    void updateEntities(double dt); // Call update(dt) on all active entities
+    void updateCollisions(); // Detect solid <-> solid collisions
+    void resolveCollisions(); // Resolve solid collisions by physically correcting positions
 
-    void updateOverlaps(float minOverlapRatio = 0.85f);
-    void resolveOverlaps();
+    void updateOverlaps(float minOverlapRatio = 0.85f); // Detect “soft” overlaps
+    void resolveOverlaps();  // Handle soft overlaps: collect coins, trigger fruit effects, etc.
+
+    void startFearMode(); // Put all ghosts into fear mode, reset fear timer
+    void stopFearMode(); // Restore ghosts to normal chase mode once timer expires
+    void updateFearTimer(double dt); // Reduce fear timer. exit fear mode automatically at timeout
 
 private:
     AbstractFactory* factory_{nullptr};
@@ -109,5 +113,11 @@ private:
     EntityId nextId_{1}; // Counter of unique id's
 
     TileMap tileMap_{};
+
+    // Fear mode for ghosts
+    bool fearActive_{false};
+    double fearTimer_{0.0};
+    double fearDuration_{5.0};
+
 };
 } // namespace pacman::logic
