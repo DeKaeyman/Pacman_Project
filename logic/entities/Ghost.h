@@ -8,10 +8,7 @@
 
 namespace pacman::logic {
 
-enum class GhostMode {
-    Chase,
-    Fear
-};
+enum class GhostMode { Chase, Fear };
 
 class Ghost : public Entity,
               public Subject { // Ghost is both an Entity and event publisher

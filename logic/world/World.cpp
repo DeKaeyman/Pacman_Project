@@ -356,13 +356,15 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
 }
 
 void World::startFearMode() {
-    fearActive_ = true; // Mark fear mode as globally active
+    fearActive_ = true;         // Mark fear mode as globally active
     fearTimer_ = fearDuration_; // Reset countdown timer
 
     for (auto& e : entities_) {
-        if (!e || !e->active) continue; // Ignore inactive entities
+        if (!e || !e->active)
+            continue; // Ignore inactive entities
         auto ghost = std::dynamic_pointer_cast<Ghost>(e);
-        if (!ghost) continue; // Only apply to ghosts
+        if (!ghost)
+            continue; // Only apply to ghosts
 
         ghost->setMode(GhostMode::Fear); // Switch ghost to blue/slow mode immediately
     }
@@ -370,23 +372,26 @@ void World::startFearMode() {
 
 void World::stopFearMode() {
     fearActive_ = false; // Fear mode no longer active
-    fearTimer_  = 0.0; // Timer cleared
+    fearTimer_ = 0.0;    // Timer cleared
 
     for (auto& e : entities_) {
-        if (!e || !e->active) continue;
+        if (!e || !e->active)
+            continue;
         auto ghost = std::dynamic_pointer_cast<Ghost>(e);
-        if (!ghost) continue;
+        if (!ghost)
+            continue;
 
         ghost->setMode(GhostMode::Chase); // Restore normal behavior & appearance
     }
 }
 
 void World::updateFearTimer(double dt) {
-    if (!fearActive_) return; // No need to track timer if not afraid
+    if (!fearActive_)
+        return; // No need to track timer if not afraid
 
-    fearTimer_ -= dt; // Decrease remaining fear duration
+    fearTimer_ -= dt;        // Decrease remaining fear duration
     if (fearTimer_ <= 0.0) { // Blue mode finished
-        stopFearMode(); // Restore ghosts to normal state
+        stopFearMode();      // Restore ghosts to normal state
     }
 }
 } // namespace pacman::logic

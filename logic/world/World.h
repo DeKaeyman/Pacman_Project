@@ -88,18 +88,19 @@ public:
     void setPacManDirection(Direction dir);
 
 private:
-    bool checkPacmanDesiredDirection(PacMan& pac, double dt); // Check if Pac-Man can turn into his buffered desired direction
+    bool checkPacmanDesiredDirection(PacMan& pac,
+                                     double dt); // Check if Pac-Man can turn into his buffered desired direction
 
     void handlePacManTurning(double dt); // Evaluate buffered turning requests BEFORE movement each frame
-    void updateEntities(double dt); // Call update(dt) on all active entities
-    void updateCollisions(); // Detect solid <-> solid collisions
-    void resolveCollisions(); // Resolve solid collisions by physically correcting positions
+    void updateEntities(double dt);      // Call update(dt) on all active entities
+    void updateCollisions();             // Detect solid <-> solid collisions
+    void resolveCollisions();            // Resolve solid collisions by physically correcting positions
 
     void updateOverlaps(float minOverlapRatio = 0.85f); // Detect “soft” overlaps
-    void resolveOverlaps();  // Handle soft overlaps: collect coins, trigger fruit effects, etc.
+    void resolveOverlaps(); // Handle soft overlaps: collect coins, trigger fruit effects, etc.
 
-    void startFearMode(); // Put all ghosts into fear mode, reset fear timer
-    void stopFearMode(); // Restore ghosts to normal chase mode once timer expires
+    void startFearMode();            // Put all ghosts into fear mode, reset fear timer
+    void stopFearMode();             // Restore ghosts to normal chase mode once timer expires
     void updateFearTimer(double dt); // Reduce fear timer. exit fear mode automatically at timeout
 
 private:
@@ -118,6 +119,5 @@ private:
     bool fearActive_{false};
     double fearTimer_{0.0};
     double fearDuration_{5.0};
-
 };
 } // namespace pacman::logic
