@@ -1,11 +1,18 @@
 // logic/entities/Ghost.cpp
 #include "Ghost.h"
 #include "../observer/Event.h"
+#include "../world/World.h"
+#include "PacMan.h"
+#include "Wall.h"
+#include "../utils/Random.h"
+#include <array>
+#include <vector>
+#include <cmath>
 
 namespace pacman::logic {
 
 Ghost::Ghost(const pacman::logic::Rect& startBounds, pacman::logic::GhostKind kind, double speed)
-    : bounds_(startBounds), spawnBounds_(startBounds), direction_(Direction::None), speed_(speed), kind_(kind), mode_(GhostMode::Chase) {
+    : bounds_(startBounds), spawnBounds_(startBounds), direction_(Direction::None), speed_(speed), baseSpeed_(speed), kind_(kind), mode_(GhostMode::Chase) {
     solid = false; // Ghost collide with pacman/walls
     active = true; // Ghost starts alive/enabled
 }
@@ -75,18 +82,101 @@ void Ghost::setDirection(Direction dir) noexcept {
     notify(e); // Trigger animation updates in GhostView
 }
 
-void Ghost::applyStrategy(double /*dt*/) {
-    switch (kind_) {
-    case GhostKind::A:
-        break;
+void Ghost::applyStrategy(double dt) {
+    if (mode_ != GhostMode::Fear) return; // Only perform this AI behavior when ghost is in FEAR mode
+    if (!world_) return; // AI cannot operate without access to the world to inspect other entities
 
-    case GhostKind::B:
-    case GhostKind::C:
-        break;
+    const auto& entities = world_->entities(); // Local reference to all world entities for convenience
 
-    case GhostKind::D:
-        break;
+    Rect pacBounds{};
+    bool foundPacman = false;
+
+    // Locate pacman in the world
+    for (const auto& e : entities) {
+        if (!e || !e->active) continue; // Skip inactive/null entities
+
+        auto pac = std::dynamic_pointer_cast<PacMan>(e);
+        if (pac) {
+            pacBounds = pac->bounds(); // Save pacmans current bounding box
+            foundPacman = true;
+            break; // only one pacman exists
+        }
     }
+
+    if (!foundPacman) return; // If the pacman is missing, ghost does nothing this frame
+
+    // Compute Pac-Man’s center position for Manhattan distance scoring
+    const float pacCenterX = pacBounds.x + pacBounds.w / 2.0f;
+    const float pacCenterY = pacBounds.y + pacBounds.h / 2.0f;
+
+    // Lambda: check if moving in direction d is allowed
+    auto isViable = [&](Direction d) {
+        if (d == Direction::None) return false;
+
+        // Predict a small movement step in direction d
+        Rect next = bounds_;
+        float step = static_cast<float>(speed_ * dt);
+        next.x += dirToDx(d) * step;
+        next.y += dirToDy(d) * step;
+
+        // Test predicted position against walls
+        for (const auto& ent : entities) {
+            if (!ent || !ent->active || !ent->solid) continue;
+            if (ent.get() == this) continue;
+
+            auto* wall = dynamic_cast<Wall*>(ent.get());
+
+            if (!wall) continue;
+            if (intersects(next, wall->bounds(), 0.0003f)) return false;
+        }
+
+        return true; // Move is allowed
+    };
+
+    // Lambda: compute Manhattan distance from Pac-Man if ghost moved in direction d
+    auto manhattanIfMove = [&](Direction d) {
+        Rect next = bounds_;
+        float step = static_cast<float>(speed_ * dt);
+        next.x += dirToDx(d) * step;
+        next.y += dirToDy(d) * step;
+
+        const float gx = next.x + next.w / 2.0f;
+        const float gy = next.y + next.h / 2.0f;
+
+        // Manhattan distance = horizontal + vertical separation
+        return std::fabs(gx - pacCenterX) + std::fabs(gy - pacCenterY);
+    };
+
+    // All directions ghost can consider
+    std::array<Direction, 4> allDirs{Direction::Right, Direction::Left, Direction::Up, Direction::Down};
+
+    float bestScore = -1.0f; // Highest Manhattan distance found
+    std::vector<Direction> bestDirs; // All directions tied for best score
+
+    // Evaluate all viable moves
+    for (Direction d : allDirs) {
+        if (!isViable(d)) continue; // Skip illegal moves
+
+        float score = manhattanIfMove(d); // Distance after moving in direction d
+        if (score > bestScore + 1e-6f) {
+            bestScore = score; // New best distance
+            bestDirs.clear();
+            bestDirs.push_back(d);
+        } else if (std::fabs(score - bestScore) <= 1e-6f) {
+            bestDirs.push_back(d);
+        }
+    }
+
+    if (bestDirs.empty()) return; // No possible direction → stay in current direction
+
+    Direction chosen = bestDirs.front();
+    if (bestDirs.size() > 1) {
+        auto& rng = Random::getInstance();
+        std::size_t idx = rng.choiceIndex(bestDirs.size());
+        chosen = bestDirs[idx]; // Pick randomly from tied options
+    }
+
+    setDirection(chosen); // Apply final chosen direction
 }
 
 void Ghost::setMode(pacman::logic::GhostMode m) noexcept {

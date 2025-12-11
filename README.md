@@ -23,7 +23,7 @@
 * [x] Toon **HUD** (app): huidige score linksboven, resterende levens, level-nummer. Bestand: `app/ui/Hud.cpp`. 
 * [x] Implementeer **Score** logica: basis-decrement over tijd, coins vergroten score met factor gebaseerd op tijd sinds laatste coin; fruits & ghosts geven bonus; score gaat mee naar volgende level. 
 * [x] Zet **Fruit** posities (linksboven en rechtsonder). World detecteert FruitCollected → zet ghost-modus naar **fear** met timer; laat ghosts trager gaan en hun richting omkeren. 
-* [ ] Maak **fear-timer** in World; bij fear: ghost kiest acties die de Manhattan-afstand tot Pac-Man maximaliseren (viable moves), ties random. Na timeout terug naar chasing. 
+* [x] Maak **fear-timer** in World; bij fear: ghost kiest acties die de Manhattan-afstand tot Pac-Man maximaliseren (viable moves), ties random. Na timeout terug naar chasing. 
 * [ ] Werk **Ghost AI** (chasing) uit:
 
   1. Ghost A: altijd locked richting tot corner/intersection; bij hoek/keuze: met p=0.5 lock naar random viable richting.

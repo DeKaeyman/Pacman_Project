@@ -8,6 +8,8 @@
 
 namespace pacman::logic {
 
+class World;
+
 enum class GhostMode {
     Chase,
     Fear
@@ -19,6 +21,8 @@ public:
     Ghost(const Rect& startBounds, GhostKind kind,
           double speed = 0.3); // Create a ghost, stores spawn position, movement
                                // speed, and ghost type
+
+    void setWorld(World* world) noexcept { world_ = world; }
 
     Rect bounds() const override { return bounds_; } // Current world space bounding box
     void update(double dt) override;                 // Apply AI strategy + movement
@@ -50,5 +54,7 @@ private:
     GhostKind kind_{GhostKind::A};         // Ghost type used for selecting AI behavior
     GhostMode mode_{GhostMode::Chase};     // Ghost mode used for selecting AI behavior
     double baseSpeed_{0.0};
+
+    World* world_{nullptr}; // World context for AI queries
 };
 } // namespace pacman::logic

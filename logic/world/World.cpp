@@ -15,6 +15,11 @@ World::EntityId World::addEntity(EntityPtr e) {
     if (!e)
         return 0;
     e->setId(nextId_++);               // Gives unique id to the entity
+
+    if (auto ghost = std::dynamic_pointer_cast<Ghost>(e)) {
+        ghost->setWorld(this);
+    }
+
     EntityId id = e->id();             // Take a snapshot of the id
     entities_.push_back(std::move(e)); // Make world owner of the entity
     return id;

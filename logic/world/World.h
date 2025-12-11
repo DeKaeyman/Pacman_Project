@@ -117,7 +117,7 @@ private:
     // Fear mode for ghosts
     bool fearActive_{false};
     double fearTimer_{0.0};
-    double fearDuration_{5.0};
+    double fearDuration_{50.0};
 
 };
 } // namespace pacman::logic
