@@ -14,7 +14,7 @@ namespace pacman::logic {
 World::EntityId World::addEntity(EntityPtr e) {
     if (!e)
         return 0;
-    e->setId(nextId_++);               // Gives unique id to the entity
+    e->setId(nextId_++); // Gives unique id to the entity
 
     if (auto ghost = std::dynamic_pointer_cast<Ghost>(e)) {
         ghost->setWorld(this);
