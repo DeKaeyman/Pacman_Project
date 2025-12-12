@@ -42,7 +42,23 @@ public:
     void setMode(GhostMode m) noexcept;
 
 private:
-    void applyStrategy(double dt); // Placeholder for AI logic decisions
+    // High-level AI dispatch
+    void applyStrategy(double dt);
+
+    // Behaviour per mode
+    void applyFearStrategy(double dt);
+    void applyChaseStrategy(double dt);
+
+    // Chase sub-behaviour per ghost type
+    void applyChaseStrategyA(double dt);                    // Ghost A: random lock + corners/intersections
+    Direction chooseDirectionTowards(double dt, float tx, float ty) const; // Ghost B/C/D: towards target
+
+    // Shared helpers
+    bool isMoveViable(Direction d, double dt) const;
+    float manhattanDistanceAfterMove(Direction d, double dt, float tx, float ty) const;
+    std::vector<Direction> collectViableDirections(double dt) const;
+    bool isIntersectionOrCorner(const std::vector<Direction>& viable) const;
+    Direction randomDirectionFrom(const std::vector<Direction>& dirs) const;
 
     Rect bounds_{};                        // Current position and size in world space
     Rect spawnBounds_{};                   // Original spawn position
