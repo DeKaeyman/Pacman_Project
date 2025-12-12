@@ -50,7 +50,7 @@ private:
     void applyChaseStrategy(double dt);
 
     // Chase sub-behaviour per ghost type
-    void applyChaseStrategyA(double dt);                    // Ghost A: random lock + corners/intersections
+    void applyChaseStrategyA(double dt); // Ghost A: random lock + corners/intersections
     Direction chooseDirectionTowards(double dt, float tx, float ty) const; // Ghost B/C/D: towards target
 
     // Shared helpers
