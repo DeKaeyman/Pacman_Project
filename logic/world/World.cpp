@@ -368,10 +368,26 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
                 rC.x -= ox;
                 rD.x += ox;
 
-                if (gA) { gA->setBounds(rA); addEntity(gA); ghostReleaseQueue_.push_back(gA); }
-                if (gB) { gB->setBounds(rB); addEntity(gB); ghostReleaseQueue_.push_back(gB); }
-                if (gC) { gC->setBounds(rC); addEntity(gC); ghostReleaseQueue_.push_back(gC); }
-                if (gD) { gD->setBounds(rD); addEntity(gD); ghostReleaseQueue_.push_back(gD); }
+                if (gA) {
+                    gA->setBounds(rA);
+                    addEntity(gA);
+                    ghostReleaseQueue_.push_back(gA);
+                }
+                if (gB) {
+                    gB->setBounds(rB);
+                    addEntity(gB);
+                    ghostReleaseQueue_.push_back(gB);
+                }
+                if (gC) {
+                    gC->setBounds(rC);
+                    addEntity(gC);
+                    ghostReleaseQueue_.push_back(gC);
+                }
+                if (gD) {
+                    gD->setBounds(rD);
+                    addEntity(gD);
+                    ghostReleaseQueue_.push_back(gD);
+                }
 
                 break;
             }
@@ -400,7 +416,8 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
 }
 
 const Wall* World::ghostGate() const noexcept {
-    if (auto g = ghostGateWall_.lock()) return g.get();
+    if (auto g = ghostGateWall_.lock())
+        return g.get();
     return nullptr;
 }
 
@@ -486,9 +503,8 @@ void World::updateGhostRelease() {
     const double now = Stopwatch::getInstance().elapsed();
     const double elapsed = now - levelStartTime_;
 
-    const double delay = (nextGhostToRelease_ < ghostReleaseDelays_.size())
-                         ? ghostReleaseDelays_[nextGhostToRelease_]
-                         : 0.0;
+    const double delay =
+        (nextGhostToRelease_ < ghostReleaseDelays_.size()) ? ghostReleaseDelays_[nextGhostToRelease_] : 0.0;
 
     if (elapsed < delay)
         return;
