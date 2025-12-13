@@ -124,6 +124,10 @@ namespace pacman::logic {
             if (!wall)
                 continue;             // Only check collision with walls
 
+            if (wall == world_->ghostGate() && world_->canGhostPassGate(this)) {
+                continue;
+            }
+
             if (intersects(next, wall->bounds(), 0.00014f))
                 return false;         // Movement blocked by wall
         }

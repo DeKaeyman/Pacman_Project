@@ -4,8 +4,9 @@
 namespace pacman::app {
 
 void WallView::draw(sf::RenderWindow& window) {
-    if (!model_ || !camera_)
-        return; // Can't draw without model or camera
+    if (!model_ || !camera_) return; // Can't draw without model or camera
+    if (!model_->active) return;
+    if (!model_->visible) return;
 
     const auto worldRect = model_->bounds();                 // Logic bounding box of the wall
     const auto pixelRect = camera_->worldToPixel(worldRect); // Convert to pixel coordinates

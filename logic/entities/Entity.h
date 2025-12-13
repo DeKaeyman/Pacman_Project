@@ -21,6 +21,7 @@ public:
 
     bool active{true}; // false => Entity will be ignored
     bool solid{true};  // false => can be phased trough
+    bool visible{true}; // false => Entity is invisible
 
 private:
     Id id_{0}; // 0 as invalid, changes when created in world

@@ -13,7 +13,8 @@ enum class TileType : std::uint8_t { // Defines all possible tile contents in
     Coin,                            // Collectable coin tile
     Fruit,                           // Collectable fruit tile
     PacManSpawn,                     // Starting position for Pacman
-    GhostSpawn                       // Starting position for ghost
+    GhostSpawn,                      // Starting position for ghost
+    GhostGate
 };
 
 class TileMap {
@@ -62,9 +63,9 @@ private:
 inline TileMap::TileMap() : tiles_(Width * Height,
                                    TileType::Empty) { // ASCII representation of the map layout
 
-    static const char* layout[Height] = {"####################", "#...G#........#...F#", "#.##.#.######.#.##.#",
-                                         "#.#..............#.#", "#.#.##.######.##.#.#", "#.P....#    #......#",
-                                         "#.#.##.##  ##.##.#.#", "#.#..............#.#", "#.##.#G######.#.##.#",
+    static const char* layout[Height] = {"####################", "#....#........#...F#", "#.##.#.######.#.##.#",
+                                         "#.#..............#.#", "#.#.##.######.##.#.#", "#.P....# G  #......#",
+                                         "#.#.##.##DD##.##.#.#", "#.#..............#.#", "#.##.#.######.#.##.#",
                                          "#F...#........#....#", "####################"};
 
     for (int y = 0; y < Height; y++) {    // Iterate trough each row
@@ -87,6 +88,9 @@ inline TileMap::TileMap() : tiles_(Width * Height,
                 break;
             case 'G': // Ghost spawn position
                 t = TileType::GhostSpawn;
+                break;
+            case 'D': // Ghost gate
+                t = TileType::GhostGate;
                 break;
             default: // Unknown char treat as empty
                 t = TileType::Empty;

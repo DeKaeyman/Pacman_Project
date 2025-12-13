@@ -6,6 +6,8 @@
 #include "../entities/PacMan.h"
 #include "../entities/Wall.h"
 
+#include "../utils/Stopwatch.h"
+
 #include <algorithm>
 #include <chrono>
 
@@ -48,6 +50,8 @@ const Entity* World::get(EntityId id) const { // Const variant for only read acc
 }
 
 void World::update(double dt) {
+    updateGhostRelease();
+
     handlePacManTurning(dt); // 1) apply buffered input to Pac-Man if possible
     updateEntities(dt);      // 2) move all entities
 
@@ -294,6 +298,10 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
     entities_.clear();       // Remove any existing entities
     lastCollisions_.clear(); // Clear previous collision data
     nextId_ = 1;             // Reset entity id counter
+    currentlyReleasingGhost_.reset();
+    ghostGateWall_.reset();
+    ghostReleaseQueue_.clear();
+    nextGhostToRelease_ = 0;
 
     if (!factory_) {
         return; // Without a factory we cannot create models/views
@@ -344,10 +352,40 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
 
             case TileType::GhostSpawn: {
                 auto gA = factory_->createGhost(GhostKind::A);
-                if (gA) {
-                    gA->setBounds(r);
-                    addEntity(gA);
+                auto gB = factory_->createGhost(GhostKind::B);
+                auto gC = factory_->createGhost(GhostKind::C);
+                auto gD = factory_->createGhost(GhostKind::D);
+
+                Rect rA = r;
+                Rect rB = r;
+                Rect rC = r;
+                Rect rD = r;
+
+                const float ox = r.w * 0.25f;
+
+                rA.x -= ox;
+                rB.x += ox;
+                rC.x -= ox;
+                rD.x += ox;
+
+                if (gA) { gA->setBounds(rA); addEntity(gA); ghostReleaseQueue_.push_back(gA); }
+                if (gB) { gB->setBounds(rB); addEntity(gB); ghostReleaseQueue_.push_back(gB); }
+                if (gC) { gC->setBounds(rC); addEntity(gC); ghostReleaseQueue_.push_back(gC); }
+                if (gD) { gD->setBounds(rD); addEntity(gD); ghostReleaseQueue_.push_back(gD); }
+
+                break;
+            }
+
+            case TileType::GhostGate: {
+                auto wall = factory_->createWall();
+                if (wall) {
+                    wall->setBounds(r);
+                    addEntity(wall);
+                    wall->visible = false;
+                    wall->solid = true;
+                    ghostGateWall_ = std::dynamic_pointer_cast<Wall>(wall);
                 }
+                break;
             }
 
             default:
@@ -356,8 +394,18 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
         }
     }
 
+    startGhostReleaseClocks();
     snapshotLevelTemplate(); // Store current entity setup as "initial state" for
                              // reset
+}
+
+const Wall* World::ghostGate() const noexcept {
+    if (auto g = ghostGateWall_.lock()) return g.get();
+    return nullptr;
+}
+
+bool World::canGhostPassGate(const Ghost* g) const noexcept {
+    return currentlyReleasingGhost_ && currentlyReleasingGhost_.get() == g;
 }
 
 void World::startFearMode() {
@@ -398,5 +446,61 @@ void World::updateFearTimer(double dt) {
     if (fearTimer_ <= 0.0) { // Blue mode finished
         stopFearMode();      // Restore ghosts to normal state
     }
+}
+
+void World::startGhostReleaseClocks() {
+    levelStartTime_ = Stopwatch::getInstance().elapsed();
+    nextGhostToRelease_ = 0;
+    currentlyReleasingGhost_.reset();
+}
+
+void World::updateGhostRelease() {
+    // If a ghost is currently being released, keep permission active until:
+    // it has touched the gate at least once AND then is no longer touching it.
+    if (currentlyReleasingGhost_) {
+        if (auto gate = ghostGateWall_.lock()) {
+            const bool touching = intersects(currentlyReleasingGhost_->bounds(), gate->bounds(), 0.0003f);
+
+            if (touching) {
+                releasingTouchedGate_ = true;
+            }
+
+            // Only stop permission AFTER it actually passed through the gate region
+            if (releasingTouchedGate_ && !touching) {
+                currentlyReleasingGhost_.reset();
+                releasingTouchedGate_ = false;
+            }
+        } else {
+            // no gate in level
+            currentlyReleasingGhost_.reset();
+            releasingTouchedGate_ = false;
+        }
+        return; // don't release another one while one is passing
+    }
+
+    // Nothing to release?
+    if (nextGhostToRelease_ >= ghostReleaseQueue_.size())
+        return;
+
+    // Time check (Stopwatch-based)
+    const double now = Stopwatch::getInstance().elapsed();
+    const double elapsed = now - levelStartTime_;
+
+    const double delay = (nextGhostToRelease_ < ghostReleaseDelays_.size())
+                         ? ghostReleaseDelays_[nextGhostToRelease_]
+                         : 0.0;
+
+    if (elapsed < delay)
+        return;
+
+    // Release exactly ONE ghost at a time
+    auto g = ghostReleaseQueue_[nextGhostToRelease_];
+    nextGhostToRelease_++;
+
+    if (!g)
+        return;
+
+    currentlyReleasingGhost_ = g;
+    releasingTouchedGate_ = false; // reset for this new release
 }
 } // namespace pacman::logic

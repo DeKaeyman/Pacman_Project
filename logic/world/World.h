@@ -87,6 +87,9 @@ public:
 
     void setPacManDirection(Direction dir);
 
+    const Wall* ghostGate() const noexcept;
+    bool canGhostPassGate(const Ghost* g) const noexcept;
+
 private:
     bool checkPacmanDesiredDirection(PacMan& pac,
                                      double dt); // Check if Pac-Man can turn into his buffered desired direction
@@ -102,6 +105,9 @@ private:
     void startFearMode();            // Put all ghosts into fear mode, reset fear timer
     void stopFearMode();             // Restore ghosts to normal chase mode once timer expires
     void updateFearTimer(double dt); // Reduce fear timer. exit fear mode automatically at timeout
+
+    void startGhostReleaseClocks();
+    void updateGhostRelease();
 
 private:
     AbstractFactory* factory_{nullptr};
@@ -119,5 +125,15 @@ private:
     bool fearActive_{false};
     double fearTimer_{0.0};
     double fearDuration_{10.0};
+
+    // Ghost release system
+    double levelStartTime_{0.0};
+    std::vector<std::shared_ptr<Ghost>> ghostReleaseQueue_;
+    std::vector<double> ghostReleaseDelays_{0.0, 0.0, 5.0, 10.0};
+    std::size_t nextGhostToRelease_{0};
+
+    std::weak_ptr<Wall> ghostGateWall_;              // the wall that blocks the gate
+    std::shared_ptr<Ghost> currentlyReleasingGhost_; // ghost that is allowed to pass gate right now
+    bool releasingTouchedGate_{false};
 };
 } // namespace pacman::logic

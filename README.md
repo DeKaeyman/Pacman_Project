@@ -29,7 +29,7 @@
   1. Ghost A: altijd locked richting tot corner/intersection; bij hoek/keuze: met p=0.5 lock naar random viable richting.
   2. Ghost B & C: kies move die min. Manhattan-afstand tot “voor Pac-Man” geeft (kijk naar Pac-Man facing).
   3. Ghost D: min. Manhattan-afstand tot Pac-Man positie. 
-* [ ] Stel release-timers in: 2 ghosts starten meteen, 2 na 5s en 10s (Stopwatch). World start klokken bij levelstart. 
+* [x] Stel release-timers in: 2 ghosts starten meteen, 2 na 5s en 10s (Stopwatch). World start klokken bij levelstart. 
 * [ ] Implementeer **collision** Pac-Man ↔ Wall: continuous beweging stopt tegen muur, geen penetratie. Logic: AABB/segment sweep; geen SFML helpers in logic. 
 * [ ] Implementeer **collision** Pac-Man ↔ Ghost: in chasing → Pac-Man verliest 1 leven; reset posities naar start; verzamelde items blijven verzameld. In fear → ghost “gegeten” → respawn center, direct chasing. 
 * [ ] Voeg **lives** systeem toe (start met 3). HUD toont resterende levens. Bij 0: LevelState pusht Victory/GameOver state terug naar menu. 
