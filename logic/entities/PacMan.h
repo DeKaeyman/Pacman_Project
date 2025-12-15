@@ -23,7 +23,6 @@ public:
     void setStartBounds(const Rect& r) noexcept { spawnBounds_ = r; }
     void resetToSpawn() noexcept;
 
-
 private:
     Rect bounds_{}; // Pacman bounding box in world space
     Direction direction_{Direction::None};

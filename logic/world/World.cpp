@@ -270,18 +270,21 @@ void World::respawnEatenGhost(Ghost& ghost) {
 
     for (auto& e : entities_) {
         auto g = std::dynamic_pointer_cast<Ghost>(e);
-        if (!g || !g->active) continue;
+        if (!g || !g->active)
+            continue;
 
         if (g.get() == &ghost) {
             gatePass_.push_back(GatePass{g, false});
-            if (g->direction() == Direction::None) g->setDirection(Direction::Up);
+            if (g->direction() == Direction::None)
+                g->setDirection(Direction::Up);
             break;
         }
     }
 }
 
 void World::resetActorsAfterPacmanHit(PacMan& pac) {
-    if (lives_ > 0) lives_--;
+    if (lives_ > 0)
+        lives_--;
 
     pac.resetToSpawn();
 
@@ -422,10 +425,30 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
                 rC.x -= ox;
                 rD.x += ox;
 
-                if (gA) { gA->setBounds(rA); gA->setStartBounds(rA); addEntity(gA); ghostReleaseQueue_.push_back(gA); }
-                if (gB) { gB->setBounds(rB); gB->setStartBounds(rB); addEntity(gB); ghostReleaseQueue_.push_back(gB); }
-                if (gC) { gC->setBounds(rC); gC->setStartBounds(rC); addEntity(gC); ghostReleaseQueue_.push_back(gC); }
-                if (gD) { gD->setBounds(rD); gD->setStartBounds(rD); addEntity(gD); ghostReleaseQueue_.push_back(gD); }
+                if (gA) {
+                    gA->setBounds(rA);
+                    gA->setStartBounds(rA);
+                    addEntity(gA);
+                    ghostReleaseQueue_.push_back(gA);
+                }
+                if (gB) {
+                    gB->setBounds(rB);
+                    gB->setStartBounds(rB);
+                    addEntity(gB);
+                    ghostReleaseQueue_.push_back(gB);
+                }
+                if (gC) {
+                    gC->setBounds(rC);
+                    gC->setStartBounds(rC);
+                    addEntity(gC);
+                    ghostReleaseQueue_.push_back(gC);
+                }
+                if (gD) {
+                    gD->setBounds(rD);
+                    gD->setStartBounds(rD);
+                    addEntity(gD);
+                    ghostReleaseQueue_.push_back(gD);
+                }
 
                 break;
             }
@@ -454,19 +477,20 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
 }
 
 const Wall* World::ghostGate() const noexcept {
-    if (auto g = ghostGateWall_.lock()) return g.get();
+    if (auto g = ghostGateWall_.lock())
+        return g.get();
     return nullptr;
 }
 
 bool World::canGhostPassGate(const Ghost* g) const noexcept {
-    if (!g) return false;
+    if (!g)
+        return false;
     for (const auto& p : gatePass_) {
         if (p.ghost && p.ghost.get() == g)
             return true;
     }
     return false;
 }
-
 
 void World::startFearMode() {
     fearActive_ = true;         // Mark fear mode as globally active
@@ -516,39 +540,45 @@ void World::startGhostReleaseClocks() {
 
 void World::updateGhostRelease() {
     if (auto gate = ghostGateWall_.lock()) {
-        for (auto it = gatePass_.begin(); it != gatePass_.end(); ) {
+        for (auto it = gatePass_.begin(); it != gatePass_.end();) {
             if (!it->ghost || !it->ghost->active) {
                 it = gatePass_.erase(it);
                 continue;
             }
             bool touching = intersects(it->ghost->bounds(), gate->bounds(), 0.0003f);
-            if (touching) it->touchedGate = true;
+            if (touching)
+                it->touchedGate = true;
 
-            if (it->touchedGate && !touching) it = gatePass_.erase(it);
-            else ++it;
+            if (it->touchedGate && !touching)
+                it = gatePass_.erase(it);
+            else
+                ++it;
         }
     } else {
         gatePass_.clear();
     }
 
-    if (nextGhostToRelease_ >= ghostReleaseQueue_.size()) return;
+    if (nextGhostToRelease_ >= ghostReleaseQueue_.size())
+        return;
 
     const double now = Stopwatch::getInstance().elapsed();
     const double elapsed = now - levelStartTime_;
 
     while (nextGhostToRelease_ < ghostReleaseQueue_.size()) {
-        double delay = (nextGhostToRelease_ < ghostReleaseDelays_.size())
-                       ? ghostReleaseDelays_[nextGhostToRelease_]
-                       : 0.0;
+        double delay =
+            (nextGhostToRelease_ < ghostReleaseDelays_.size()) ? ghostReleaseDelays_[nextGhostToRelease_] : 0.0;
 
-        if (elapsed < delay) break;
+        if (elapsed < delay)
+            break;
 
         auto g = ghostReleaseQueue_[nextGhostToRelease_++];
-        if (!g || !g->active) continue;
+        if (!g || !g->active)
+            continue;
 
         gatePass_.push_back(GatePass{g, false});
 
-        if (g->direction() == Direction::None) g->setDirection(Direction::Up);
+        if (g->direction() == Direction::None)
+            g->setDirection(Direction::Up);
     }
 }
 } // namespace pacman::logic
