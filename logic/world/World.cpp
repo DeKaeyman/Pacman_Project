@@ -241,7 +241,61 @@ void World::resolveOverlaps() {
                 startFearMode();
             }
         }
+
+        // Pac-Man <=> Ghost
+        {
+            PacMan* pac = dynamic_cast<PacMan*>(a);
+            Ghost* ghost = dynamic_cast<Ghost*>(b);
+
+            if (!pac || !ghost) { // Reverse lookup
+                pac = dynamic_cast<PacMan*>(b);
+                ghost = dynamic_cast<Ghost*>(a);
+            }
+
+            if (pac && ghost && pac->active && ghost->active) {
+                if (ghost->mode() == GhostMode::Fear) {
+                    respawnEatenGhost(*ghost);
+                } else {
+                    resetActorsAfterPacmanHit(*pac);
+                    break;
+                }
+                continue;
+            }
+        }
     }
+}
+
+void World::respawnEatenGhost(Ghost& ghost) {
+    ghost.resetToSpawn();
+
+    for (auto& e : entities_) {
+        auto g = std::dynamic_pointer_cast<Ghost>(e);
+        if (!g || !g->active) continue;
+
+        if (g.get() == &ghost) {
+            gatePass_.push_back(GatePass{g, false});
+            if (g->direction() == Direction::None) g->setDirection(Direction::Up);
+            break;
+        }
+    }
+}
+
+void World::resetActorsAfterPacmanHit(PacMan& pac) {
+    if (lives_ > 0) lives_--;
+
+    pac.resetToSpawn();
+
+    stopFearMode();
+
+    for (auto& e : entities_) {
+        auto g = std::dynamic_pointer_cast<Ghost>(e);
+        if (!g || !g->active)
+            continue;
+
+        g->resetToSpawn();
+    }
+
+    startGhostReleaseClocks();
 }
 
 bool World::checkPacmanDesiredDirection(PacMan& pac, double dt) {
@@ -298,7 +352,6 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
     entities_.clear();       // Remove any existing entities
     lastCollisions_.clear(); // Clear previous collision data
     nextId_ = 1;             // Reset entity id counter
-    currentlyReleasingGhost_.reset();
     ghostGateWall_.reset();
     ghostReleaseQueue_.clear();
     nextGhostToRelease_ = 0;
@@ -345,6 +398,7 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
                 auto pac = factory_->createPacMan();
                 if (pac) {
                     pac->setBounds(r);
+                    pac->setStartBounds(r);
                     addEntity(pac);
                 }
                 break;
@@ -368,10 +422,10 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
                 rC.x -= ox;
                 rD.x += ox;
 
-                if (gA) { gA->setBounds(rA); addEntity(gA); ghostReleaseQueue_.push_back(gA); }
-                if (gB) { gB->setBounds(rB); addEntity(gB); ghostReleaseQueue_.push_back(gB); }
-                if (gC) { gC->setBounds(rC); addEntity(gC); ghostReleaseQueue_.push_back(gC); }
-                if (gD) { gD->setBounds(rD); addEntity(gD); ghostReleaseQueue_.push_back(gD); }
+                if (gA) { gA->setBounds(rA); gA->setStartBounds(rA); addEntity(gA); ghostReleaseQueue_.push_back(gA); }
+                if (gB) { gB->setBounds(rB); gB->setStartBounds(rB); addEntity(gB); ghostReleaseQueue_.push_back(gB); }
+                if (gC) { gC->setBounds(rC); gC->setStartBounds(rC); addEntity(gC); ghostReleaseQueue_.push_back(gC); }
+                if (gD) { gD->setBounds(rD); gD->setStartBounds(rD); addEntity(gD); ghostReleaseQueue_.push_back(gD); }
 
                 break;
             }
@@ -405,8 +459,14 @@ const Wall* World::ghostGate() const noexcept {
 }
 
 bool World::canGhostPassGate(const Ghost* g) const noexcept {
-    return currentlyReleasingGhost_ && currentlyReleasingGhost_.get() == g;
+    if (!g) return false;
+    for (const auto& p : gatePass_) {
+        if (p.ghost && p.ghost.get() == g)
+            return true;
+    }
+    return false;
 }
+
 
 void World::startFearMode() {
     fearActive_ = true;         // Mark fear mode as globally active
@@ -451,56 +511,44 @@ void World::updateFearTimer(double dt) {
 void World::startGhostReleaseClocks() {
     levelStartTime_ = Stopwatch::getInstance().elapsed();
     nextGhostToRelease_ = 0;
-    currentlyReleasingGhost_.reset();
+    gatePass_.clear();
 }
 
 void World::updateGhostRelease() {
-    // If a ghost is currently being released, keep permission active until:
-    // it has touched the gate at least once AND then is no longer touching it.
-    if (currentlyReleasingGhost_) {
-        if (auto gate = ghostGateWall_.lock()) {
-            const bool touching = intersects(currentlyReleasingGhost_->bounds(), gate->bounds(), 0.0003f);
-
-            if (touching) {
-                releasingTouchedGate_ = true;
+    if (auto gate = ghostGateWall_.lock()) {
+        for (auto it = gatePass_.begin(); it != gatePass_.end(); ) {
+            if (!it->ghost || !it->ghost->active) {
+                it = gatePass_.erase(it);
+                continue;
             }
+            bool touching = intersects(it->ghost->bounds(), gate->bounds(), 0.0003f);
+            if (touching) it->touchedGate = true;
 
-            // Only stop permission AFTER it actually passed through the gate region
-            if (releasingTouchedGate_ && !touching) {
-                currentlyReleasingGhost_.reset();
-                releasingTouchedGate_ = false;
-            }
-        } else {
-            // no gate in level
-            currentlyReleasingGhost_.reset();
-            releasingTouchedGate_ = false;
+            if (it->touchedGate && !touching) it = gatePass_.erase(it);
+            else ++it;
         }
-        return; // don't release another one while one is passing
+    } else {
+        gatePass_.clear();
     }
 
-    // Nothing to release?
-    if (nextGhostToRelease_ >= ghostReleaseQueue_.size())
-        return;
+    if (nextGhostToRelease_ >= ghostReleaseQueue_.size()) return;
 
-    // Time check (Stopwatch-based)
     const double now = Stopwatch::getInstance().elapsed();
     const double elapsed = now - levelStartTime_;
 
-    const double delay = (nextGhostToRelease_ < ghostReleaseDelays_.size())
-                         ? ghostReleaseDelays_[nextGhostToRelease_]
-                         : 0.0;
+    while (nextGhostToRelease_ < ghostReleaseQueue_.size()) {
+        double delay = (nextGhostToRelease_ < ghostReleaseDelays_.size())
+                       ? ghostReleaseDelays_[nextGhostToRelease_]
+                       : 0.0;
 
-    if (elapsed < delay)
-        return;
+        if (elapsed < delay) break;
 
-    // Release exactly ONE ghost at a time
-    auto g = ghostReleaseQueue_[nextGhostToRelease_];
-    nextGhostToRelease_++;
+        auto g = ghostReleaseQueue_[nextGhostToRelease_++];
+        if (!g || !g->active) continue;
 
-    if (!g)
-        return;
+        gatePass_.push_back(GatePass{g, false});
 
-    currentlyReleasingGhost_ = g;
-    releasingTouchedGate_ = false; // reset for this new release
+        if (g->direction() == Direction::None) g->setDirection(Direction::Up);
+    }
 }
 } // namespace pacman::logic

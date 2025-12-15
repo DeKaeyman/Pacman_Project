@@ -20,11 +20,15 @@ public:
     void setSpeed(double s) noexcept { speed_ = s; }        // Set movement speed
     double speed() const noexcept { return speed_; }        // Get movement speed
     void setBounds(const Rect& r) noexcept { bounds_ = r; } // Directly set the bounding box
+    void setStartBounds(const Rect& r) noexcept { spawnBounds_ = r; }
+    void resetToSpawn() noexcept;
+
 
 private:
     Rect bounds_{}; // Pacman bounding box in world space
     Direction direction_{Direction::None};
     Direction desiredDirection_{Direction::Right};
     double speed_{0.0}; // Units per second in world coordinates
+    Rect spawnBounds_{};
 };
 } // namespace pacman::logic

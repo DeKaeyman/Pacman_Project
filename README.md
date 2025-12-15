@@ -30,20 +30,21 @@
   2. Ghost B & C: kies move die min. Manhattan-afstand tot “voor Pac-Man” geeft (kijk naar Pac-Man facing).
   3. Ghost D: min. Manhattan-afstand tot Pac-Man positie. 
 * [x] Stel release-timers in: 2 ghosts starten meteen, 2 na 5s en 10s (Stopwatch). World start klokken bij levelstart. 
-* [ ] Implementeer **collision** Pac-Man ↔ Wall: continuous beweging stopt tegen muur, geen penetratie. Logic: AABB/segment sweep; geen SFML helpers in logic. 
-* [ ] Implementeer **collision** Pac-Man ↔ Ghost: in chasing → Pac-Man verliest 1 leven; reset posities naar start; verzamelde items blijven verzameld. In fear → ghost “gegeten” → respawn center, direct chasing. 
+* [x] Implementeer **collision** Pac-Man ↔ Wall: continuous beweging stopt tegen muur, geen penetratie. Logic: AABB/segment sweep; geen SFML helpers in logic. 
+* [x] Implementeer **collision** Pac-Man ↔ Ghost: in chasing → Pac-Man verliest 1 leven; reset posities naar start; verzamelde items blijven verzameld. In fear → ghost “gegeten” → respawn center, direct chasing. 
 * [ ] Voeg **lives** systeem toe (start met 3). HUD toont resterende levens. Bij 0: LevelState pusht Victory/GameOver state terug naar menu. 
+* [ ] Fix all point increases like ghost deaths pacman deaths and so on
 * [ ] Detecteer **level clear**: alle coins & fruits opgegeten → verhoog level, bonuspunten, respawn items, ghosts naar center, behoud score & levens. Ghosts sneller, fear korter per level. 
 * [ ] Breid **State** flow uit: Escape → PausedState; van Paused terug naar Level; bij GameOver → Menu; bij Victory → volgende LevelState. Gebruik stack-push/pop. 
 * [ ] Leg **input-mapping** vast in LevelState (app): pijlen zetten gewenste richting in World; geen logic in app; alleen doorgeven van intenties.
 * [ ] Plaats **Camera** gebruik in tekenpad: Views vragen Camera om wereld→pixel; pas window resize toe zonder logic aan te raken.
-* [ ] Maak **AssetManager** in app om textures/fonts/sounds te cachen; paths in `assets/`. (Optioneel geluid later.)
-* [ ] Richt **animation system** in views: frame-duur op Stopwatch gebaseerd; Pac-Man mond toggelt; ghosts lopen; fear kleur blauw. 
+* [x] Maak **AssetManager** in app om textures/fonts/sounds te cachen; paths in `assets/`. (Optioneel geluid later.)
+* [x] Richt **animation system** in views: frame-duur op Stopwatch gebaseerd; Pac-Man mond toggelt; ghosts lopen; fear kleur blauw. 
 * [ ] Voeg **scoreboard** persistentie toe: Score schrijft top-5 bij game-over; MenuState leest en toont boven “Play”. 
-* [ ] Introduceer **Entity** basis in logic (id, bbox, update). World beheert collecties en iteraties; vermijd dynamic_cast; gebruik polymorfisme/visitors indien nodig. 
-* [ ] Definieer **Observer** interfaces: Subject (attach/detach/notify), Observer (onEvent). Views en Score subscriben op Models; events zijn klein (enum + payload). 
-* [ ] Voeg **AbstractFactory** methods toe: createPacMan, createGhost(type), createCoin, createFruit, createWall. ConcreteFactory maakt model + view en koppelt Observer. 
-* [ ] Teken **maze walls** in app met SFML shapes (esthetiek hoeft niet exact). Map-definitie blijft in logic. 
+* [x] Introduceer **Entity** basis in logic (id, bbox, update). World beheert collecties en iteraties; vermijd dynamic_cast; gebruik polymorfisme/visitors indien nodig. 
+* [x] Definieer **Observer** interfaces: Subject (attach/detach/notify), Observer (onEvent). Views en Score subscriben op Models; events zijn klein (enum + payload). 
+* [x] Voeg **AbstractFactory** methods toe: createPacMan, createGhost(type), createCoin, createFruit, createWall. ConcreteFactory maakt model + view en koppelt Observer. 
+* [x] Teken **maze walls** in app met SFML shapes (esthetiek hoeft niet exact). Map-definitie blijft in logic. 
 * [ ] Implementeer **StartFlow**: App start in MenuState (scoreboard + Play); klik Play → LevelState init met Level 1, spawnt entiteiten via factory. 
 * [ ] Voeg **difficulty scaling** parameters toe in World: ghostSpeed += Δ, fearDuration *= factor<1 per level. Stel concrete waardes in en documenteer. 
 * [ ] Maak **config** (ini/json/toml) voor snelheden, timings, tilegrootte; laad in app en geef door aan logic bij World-constructie.
@@ -55,7 +56,7 @@
 * [ ] Voeg **tunnels** toe (optioneel): teleport links↔rechts; update Camera/Views voor wrap-around.
 * [ ] Implementeer **ghost house** logica (center spawn) en release-poort; eaten ghosts keren als ogen terug naar center en hergroenen naar chasing. 
 * [ ] Breid **HUD** uit met timers: fear-resttijd, level, score multiplier (op basis van coin-combo). 
-* [ ] Maak **score-multipliers** coherent met eisen: hoe korter tussen twee coins, hoe groter de bonus; reset na pauze of bij schade. 
+* [x] Maak **score-multipliers** coherent met eisen: hoe korter tussen twee coins, hoe groter de bonus; reset na pauze of bij schade. 
 * [ ] Plaats **lives UI** als kleine pacman-icons rechtsboven; update via Observer bij life-change.
 * [ ] Zet **GameOver flow**: bij 0 levens → GameOverState met score, naaminput (optioneel) en “Back to Menu”.
 * [ ] Zet **Victory flow**: bij level clear → VictoryState met bonuspunten en “Next Level”.
@@ -67,9 +68,9 @@
 * [ ] Voeg **sound hooks** (optioneel) in app toe: chomp, fruit, death, start-jingle. Logic triggert events; app speelt audio. (Bonus idee.) 
 * [ ] Implementeer **pause overlay** met donker filter en menu (Resume/Restart/Menu).
 * [ ] Zorg voor **resize-safe UI** (HUD en sprites schalen via Camera; geen magic pixels).
-* [ ] Verbeter **sprite selectie**: Pac-Man/ghost sprite index op richting; ogen tonen lock-richting. 
+* [x] Verbeter **sprite selectie**: Pac-Man/ghost sprite index op richting; ogen tonen lock-richting. 
 * [ ] Voeg **tile snapping** toleranties toe zodat richtingwissel bij kruising natuurlijk aanvoelt.
-* [ ] Maak **level loader** (tekst/bitmap) die walls/coins/fruits in World vult; zo kun je snel layout wijzigen.
+* [x] Maak **level loader** (tekst/bitmap) die walls/coins/fruits in World vult; zo kun je snel layout wijzigen.
 * [ ] Automatiseer **build**: CMake targets `logic`, `app`, `tests`; install rules voor assets; compileer met C++20.
 * [ ] Configureer **CI** (bijv. CircleCI) om op Ubuntu 24.04.3 met SFML 2.6.1, CMake 3.28.3, g++13/clang18 te bouwen; toon badge in README. 
 * [ ] Voeg **clang-format** (geleverd config) en pre-commit hook toe; format alle bestanden. 

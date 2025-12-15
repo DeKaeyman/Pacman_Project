@@ -70,8 +70,28 @@ namespace pacman::logic {
     }
 
     void Ghost::resetToSpawn() noexcept {
+        setMode(GhostMode::Chase);
+
+        StateChangedPayload payload1{}; // Prepare mode change data for view
+        payload1.code = (mode_ == GhostMode::Fear) ? 100 : 101; // 100 = enter fear, 101 = exit fear
+
+        Event e1{};                    // Create state change event
+        e1.type = EventType::StateChanged;
+        e1.payload = payload1;
+
+        notify(e1);                    // Notify GhostView to change appearance (blue/normal)
+
         bounds_ = spawnBounds_;       // Restore original spawn position
         direction_ = Direction::None; // Clear current movement direction
+
+        MovedPayload payload2{};
+        payload2.pos = {bounds_.x, bounds_.y};
+        payload2.size = {bounds_.w, bounds_.h};
+
+        Event e2{};
+        e2.type = EventType::Moved;
+        e2.payload = payload2;
+        notify(e2);
     }
 
     void Ghost::setDirection(Direction dir) noexcept {
@@ -128,7 +148,7 @@ namespace pacman::logic {
                 continue;
             }
 
-            if (intersects(next, wall->bounds(), 0.00014f))
+            if (intersects(next, wall->bounds(), 0.000128f))
                 return false;         // Movement blocked by wall
         }
 
@@ -189,14 +209,26 @@ namespace pacman::logic {
     }
 
     void Ghost::applyStrategy(double dt) {
-        if (!world_)
-            return;                   // Can't run AI without world reference
+        if (!world_) return;
 
-        if (mode_ == GhostMode::Fear) {
-            applyFearStrategy(dt);    // Run away from Pac-Man
-        } else {
-            applyChaseStrategy(dt);   // Chase Pac-Man using ghost-specific AI
+        if (world_->canGhostPassGate(this)) {
+            if (isMoveViable(Direction::Up, dt)) {
+                setDirection(Direction::Up);
+                return;
+            }
+            auto viable = collectViableDirections(dt);
+            if (!viable.empty()) {
+                Direction opp = oppositeOf(direction_);
+                for (Direction d : viable) {
+                    if (d != opp) { setDirection(d); return; }
+                }
+                setDirection(viable.front());
+            }
+            return;
         }
+
+        if (mode_ == GhostMode::Fear) applyFearStrategy(dt);
+        else                         applyChaseStrategy(dt);
     }
 
     void Ghost::applyFearStrategy(double dt) {
@@ -376,84 +408,78 @@ namespace pacman::logic {
     }
 
     void Ghost::applyChaseStrategyA(double dt) {
-        auto viable = collectViableDirections(dt); // Get all non-blocked directions
-        if (viable.empty())
-            return;                   // Nowhere to move, ghost is stuck
+        auto viable = collectViableDirections(dt);
+        if (viable.empty()) return;
 
-        Direction current = direction_; // Current movement direction
+        Direction current  = direction_;
+        Direction opposite = oppositeOf(current);
 
         auto contains = [&](Direction d) {
             return std::find(viable.begin(), viable.end(), d) != viable.end();
         };
 
-        bool currentViable = (current != Direction::None) && contains(current);
-        bool isChoice = isIntersectionOrCorner(viable); // Check if at decision point
+        bool isCorridor = (viable.size() == 2 && oppositeOf(viable[0]) == viable[1]);
 
-        // Lock direction until corner/intersection
-        if (!isChoice && currentViable)
-            return;                   // Keep moving in current direction
-
-        // At corner/intersection: pick random viable direction with p=0.5
-        auto& rng = Random::getInstance(); // Get random number generator
-        bool shouldChange = (rng.choiceIndex(2) == 0); // 50% chance to change
-
-        if (!shouldChange && currentViable)
-            return;                   // Decided to keep current direction
-
-        // Try to avoid 180° turns
-        Direction opposite = oppositeOf(current); // Get opposite direction
-        std::vector<Direction> candidates;
-        for (Direction d : viable) {
-            if (d != opposite)        // Exclude 180° turn
-                candidates.push_back(d);
+        if (isCorridor && current != Direction::None && contains(current)) {
+            return;
         }
 
-        // If no options (dead end), allow 180° turn
-        if (candidates.empty())
-            candidates = viable;      // Use all viable directions including 180°
+        bool isChoice = isIntersectionOrCorner(viable);
+        bool currentViable = (current != Direction::None && contains(current));
 
-        Direction chosen = randomDirectionFrom(candidates); // Pick random direction
-        if (chosen != Direction::None)
-            setDirection(chosen);     // Apply chosen direction
+        if (!isChoice && currentViable) return;
+
+        auto& rng = Random::getInstance();
+        bool shouldChange = (rng.choiceIndex(2) == 0);
+        if (!shouldChange && currentViable) return;
+
+        std::vector<Direction> candidates;
+        for (Direction d : viable) if (d != opposite) candidates.push_back(d);
+        if (candidates.empty()) candidates = viable;
+
+        Direction chosen = randomDirectionFrom(candidates);
+        if (chosen != Direction::None) setDirection(chosen);
     }
 
     Direction Ghost::chooseDirectionTowards(double dt, float tx, float ty) const {
-        std::array<Direction, 4> allDirs{Direction::Right, Direction::Left, Direction::Up, Direction::Down};
+        auto viable = collectViableDirections(dt);
+        if (viable.empty()) return Direction::None;
 
-        float bestScore = std::numeric_limits<float>::max(); // Track best (lowest) distance
-        std::vector<Direction> bestDirs; // Store all directions with best score
-        const float eps = 1e-6f;      // Epsilon for float comparison
+        Direction current  = direction_;
+        Direction opposite = oppositeOf(current);
 
-        Direction opposite = oppositeOf(direction_); // Get opposite of current direction
+        auto contains = [&](Direction d) {
+            return std::find(viable.begin(), viable.end(), d) != viable.end();
+        };
 
-        // First pass: collect viable directions excluding 180° turn
-        for (Direction d : allDirs) {
-            if (!isMoveViable(d, dt))
-                continue;             // Skip blocked directions
+        bool isCorridor = (viable.size() == 2 && oppositeOf(viable[0]) == viable[1]);
 
-            // Skip 180° turns in first pass
-            if (d == opposite)
-                continue;
+        if (isCorridor && current != Direction::None && contains(current)) {
+            return current;
+        }
 
-            float score = manhattanDistanceAfterMove(d, dt, tx, ty); // Calculate distance
-            if (score < bestScore - eps) {
-                bestScore = score;    // New best (shortest) distance found
-                bestDirs.clear();
+        std::vector<Direction> candidates;
+        for (Direction d : viable) if (d != opposite) candidates.push_back(d);
+        if (candidates.empty()) candidates = viable; // dead end => allow 180
+
+        float best = std::numeric_limits<float>::max();
+        std::vector<Direction> bestDirs;
+        const float eps = 1e-6f;
+
+        for (Direction d : candidates) {
+            float score = manhattanDistanceAfterMove(d, dt, tx, ty);
+
+            if (d == current) score -= 1e-4f;
+
+            if (score < best - eps) {
+                best = score;
+                bestDirs = {d};
+            } else if (std::fabs(score - best) <= eps) {
                 bestDirs.push_back(d);
-            } else if (std::fabs(score - bestScore) <= eps) {
-                bestDirs.push_back(d); // Tie, add to list
             }
         }
 
-        // If no viable moves found (dead end), allow 180° turn
-        if (bestDirs.empty() && opposite != Direction::None && isMoveViable(opposite, dt)) {
-            return opposite;          // Only option is to turn back
-        }
-
-        if (bestDirs.empty())
-            return Direction::None;   // Truly stuck, no viable moves
-
-        return randomDirectionFrom(bestDirs); // Pick random from best options
+        return bestDirs.empty() ? Direction::None : randomDirectionFrom(bestDirs);
     }
 
     void Ghost::setMode(pacman::logic::GhostMode m) noexcept {

@@ -41,6 +41,8 @@ public:
     bool isInFearMode() const noexcept { return mode_ == GhostMode::Fear; } // Check if the ghost is in fear mode
     void setMode(GhostMode m) noexcept;
 
+    void setStartBounds(const Rect& r) noexcept { spawnBounds_ = r; }
+
 private:
     // High-level AI dispatch
     void applyStrategy(double dt);

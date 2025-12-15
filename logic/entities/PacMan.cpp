@@ -4,7 +4,7 @@
 
 namespace pacman::logic {
 
-PacMan::PacMan(const pacman::logic::Rect& startBounds, double speed) : bounds_(startBounds), speed_(speed) {
+PacMan::PacMan(const pacman::logic::Rect& startBounds, double speed) : bounds_(startBounds), speed_(speed), spawnBounds_(startBounds) {
     solid = true;  // Pacman collides with walls/ghosts
     active = true; // Pacman is alive/visible
 }
@@ -77,5 +77,22 @@ void PacMan::setDirection(Direction dir) noexcept {
     e.payload = payload;
 
     notify(e); // Send to all attached observers
+}
+
+void PacMan::resetToSpawn() noexcept {
+    bounds_ = spawnBounds_;
+
+    // Clear movement intent + actual motion
+    direction_ = Direction::None;
+    desiredDirection_ = Direction::None;
+
+    MovedPayload payload{};
+    payload.pos = {bounds_.x, bounds_.y};
+    payload.size = {bounds_.w, bounds_.h};
+
+    Event moved{};
+    moved.type = EventType::Moved;
+    moved.payload = payload;
+    notify(moved);
 }
 } // namespace pacman::logic

@@ -9,12 +9,17 @@
 
 namespace pacman::logic {
 
-inline bool intersects(const Rect& a, const Rect& b,
+    struct GatePass {
+        std::shared_ptr<Ghost> ghost;
+        bool touchedGate{false};
+    };
+
+    inline bool intersects(const Rect& a, const Rect& b,
                        float eps = 0) { // Small AABB overlap test in world coordinates
-    const bool xOverlap = (a.x < b.x + b.w - eps) && (b.x < a.x + a.w - eps);
-    const bool yOverlap = (a.y < b.y + b.h - eps) && (b.y < a.y + a.h - eps);
-    return xOverlap && yOverlap;
-}
+        const bool xOverlap = (a.x < b.x + b.w - eps) && (b.x < a.x + a.w - eps);
+        const bool yOverlap = (a.y < b.y + b.h - eps) && (b.y < a.y + a.h - eps);
+        return xOverlap && yOverlap;
+    }
 
 // Compute overlap area between two rectangles (0 if no overlap)
 inline float overlapArea(const Rect& a, const Rect& b) {
@@ -77,6 +82,7 @@ public:
     void resetLevel();   // reset to startstate
     void advanceLevel(); // go to next level
     int currentLevel() const { return currentLevel_; }
+    int lives() const noexcept { return lives_; }
 
     void snapshotLevelTemplate(); // Startstate of level
 
@@ -109,6 +115,9 @@ private:
     void startGhostReleaseClocks();
     void updateGhostRelease();
 
+    void respawnEatenGhost(Ghost& ghost);
+    void resetActorsAfterPacmanHit(PacMan& pac);
+
 private:
     AbstractFactory* factory_{nullptr};
     std::vector<EntityPtr> entities_;                           // All entities
@@ -120,6 +129,8 @@ private:
     EntityId nextId_{1}; // Counter of unique id's
 
     TileMap tileMap_{};
+
+    int lives_{3};
 
     // Fear mode for ghosts
     bool fearActive_{false};
@@ -133,7 +144,6 @@ private:
     std::size_t nextGhostToRelease_{0};
 
     std::weak_ptr<Wall> ghostGateWall_;              // the wall that blocks the gate
-    std::shared_ptr<Ghost> currentlyReleasingGhost_; // ghost that is allowed to pass gate right now
-    bool releasingTouchedGate_{false};
+    std::vector<GatePass> gatePass_;
 };
 } // namespace pacman::logic

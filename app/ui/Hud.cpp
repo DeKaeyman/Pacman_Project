@@ -28,7 +28,7 @@ Hud::Hud(logic::Score& score, logic::World& world, const sf::Font& font) : score
 void Hud::draw(sf::RenderWindow& window) {
     // Build dynamic text for current score
     scoreText_.setString("Score: " + std::to_string(score_.value()));
-    livesText_.setString("Lives: " + std::to_string(lives_));
+    livesText_.setString("Lives: " + std::to_string(world_.lives()));
     levelText_.setString("Level: " + std::to_string(world_.currentLevel()));
 
     window.draw(scoreText_);
