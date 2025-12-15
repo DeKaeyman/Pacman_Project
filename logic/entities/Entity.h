@@ -19,8 +19,8 @@ public:
 
     virtual void update(double dt) = 0;
 
-    bool active{true}; // false => Entity will be ignored
-    bool solid{true};  // false => can be phased trough
+    bool active{true};  // false => Entity will be ignored
+    bool solid{true};   // false => can be phased trough
     bool visible{true}; // false => Entity is invisible
 
 private:
