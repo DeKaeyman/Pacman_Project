@@ -49,17 +49,20 @@ void Game::run() {
     while (window_.isOpen()) {
         sf::Event e{};
         while (window_.pollEvent(e)) {
-            if (e.type == sf::Event::Closed) window_.close();
+            if (e.type == sf::Event::Closed)
+                window_.close();
             else if (e.type == sf::Event::Resized) {
                 camera_.setViewport((int)e.size.width, (int)e.size.height);
             }
             stateManager_->handleEvent(e);
         }
-        if (!window_.isOpen()) break;
+        if (!window_.isOpen())
+            break;
 
         stopwatch.tick();
         double frameDt = stopwatch.deltaTime();
-        if (frameDt > maxFrameDt) frameDt = maxFrameDt;
+        if (frameDt > maxFrameDt)
+            frameDt = maxFrameDt;
 
         accumulator += frameDt;
 
