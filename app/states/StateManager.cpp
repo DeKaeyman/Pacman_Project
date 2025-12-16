@@ -38,19 +38,21 @@ void StateManager::clear() {
 void StateManager::applyPending() {
     for (auto& a : pending_) {
         switch (a.type) {
-            case ActionType::Clear:
-                stack_.clear();
-                break;
-            case ActionType::Pop:
-                if (!stack_.empty()) stack_.pop_back();
-                break;
-            case ActionType::Replace:
-                if (!stack_.empty()) stack_.pop_back();
-                stack_.push_back(make(a.id));
-                break;
-            case ActionType::Push:
-                stack_.push_back(make(a.id));
-                break;
+        case ActionType::Clear:
+            stack_.clear();
+            break;
+        case ActionType::Pop:
+            if (!stack_.empty())
+                stack_.pop_back();
+            break;
+        case ActionType::Replace:
+            if (!stack_.empty())
+                stack_.pop_back();
+            stack_.push_back(make(a.id));
+            break;
+        case ActionType::Push:
+            stack_.push_back(make(a.id));
+            break;
         }
     }
     pending_.clear();
