@@ -9,17 +9,17 @@
 
 namespace pacman::logic {
 
-    struct GatePass {
-        std::shared_ptr<Ghost> ghost;
-        bool touchedGate{false};
-    };
+struct GatePass {
+    std::shared_ptr<Ghost> ghost;
+    bool touchedGate{false};
+};
 
-    inline bool intersects(const Rect& a, const Rect& b,
+inline bool intersects(const Rect& a, const Rect& b,
                        float eps = 0) { // Small AABB overlap test in world coordinates
-        const bool xOverlap = (a.x < b.x + b.w - eps) && (b.x < a.x + a.w - eps);
-        const bool yOverlap = (a.y < b.y + b.h - eps) && (b.y < a.y + a.h - eps);
-        return xOverlap && yOverlap;
-    }
+    const bool xOverlap = (a.x < b.x + b.w - eps) && (b.x < a.x + a.w - eps);
+    const bool yOverlap = (a.y < b.y + b.h - eps) && (b.y < a.y + a.h - eps);
+    return xOverlap && yOverlap;
+}
 
 // Compute overlap area between two rectangles (0 if no overlap)
 inline float overlapArea(const Rect& a, const Rect& b) {
@@ -145,7 +145,7 @@ private:
     std::vector<double> ghostReleaseDelays_{0.0, 0.0, 5.0, 10.0};
     std::size_t nextGhostToRelease_{0};
 
-    std::weak_ptr<Wall> ghostGateWall_;              // the wall that blocks the gate
+    std::weak_ptr<Wall> ghostGateWall_; // the wall that blocks the gate
     std::vector<GatePass> gatePass_;
 };
 } // namespace pacman::logic
