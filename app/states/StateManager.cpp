@@ -35,6 +35,27 @@ void StateManager::clear() {
     stack_.clear(); // Clear the full stack
 }
 
+void StateManager::applyPending() {
+    for (auto& a : pending_) {
+        switch (a.type) {
+            case ActionType::Clear:
+                stack_.clear();
+                break;
+            case ActionType::Pop:
+                if (!stack_.empty()) stack_.pop_back();
+                break;
+            case ActionType::Replace:
+                if (!stack_.empty()) stack_.pop_back();
+                stack_.push_back(make(a.id));
+                break;
+            case ActionType::Push:
+                stack_.push_back(make(a.id));
+                break;
+        }
+    }
+    pending_.clear();
+}
+
 void StateManager::handleEvent(const sf::Event& e) {
     if (!stack_.empty())
         stack_.back()->handleEvent(e); // Send the user input to the current top stack

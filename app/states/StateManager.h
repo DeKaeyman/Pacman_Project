@@ -1,5 +1,6 @@
 #pragma once
 #include "State.h"
+#include "AppContext.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 #include <functional>
@@ -33,9 +34,16 @@ public:
     bool empty() const { return stack_.empty(); }
     std::size_t size() const { return stack_.size(); }
 
+    AppContext ctx;
+
 private:
+    enum class ActionType { Push, Replace, Pop, Clear };
+    struct Action { ActionType type; Id id; };
+
+    void applyPending();
+    std::vector<Action> pending_;
+
     std::unique_ptr<State> make(const Id& id); // Help function, creates a state via the correct factory
-                                               // based on id
 
     std::vector<std::unique_ptr<State>> stack_; // The actual stack, latest element is active state
     std::unordered_map<Id, Factory> factories_; // Registry of available state types based on the name

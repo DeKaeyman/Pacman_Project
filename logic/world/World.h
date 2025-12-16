@@ -83,6 +83,8 @@ public:
     void advanceLevel(); // go to next level
     int currentLevel() const { return currentLevel_; }
     int lives() const noexcept { return lives_; }
+    void resetLives() noexcept { lives_ = 3; }
+    bool isGameOver() const noexcept { return lives_ <= 0; }
 
     void snapshotLevelTemplate(); // Startstate of level
 

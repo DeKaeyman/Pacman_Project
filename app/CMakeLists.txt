@@ -36,6 +36,7 @@ add_executable(pacman
         views/WallView.h
         ui/Hud.cpp
         ui/Hud.h
+        states/AppContext.h
 )
 
 target_link_libraries(pacman PRIVATE logic sfml-graphics sfml-window sfml-system

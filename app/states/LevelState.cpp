@@ -1,5 +1,6 @@
 // LevelState.cpp
 #include "LevelState.h"
+#include "StateManager.h"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Keyboard.hpp>
@@ -49,6 +50,18 @@ void LevelState::update(double dt) {
     if (world_) { // Only update if world exists
         if (desiredDirection_ != pacman::logic::Direction::None) {
             world_->setPacManDirection(desiredDirection_);
+        }
+
+        if (world_ && world_->isGameOver()) {
+            manager_.ctx.finalScore = score_.value();
+            push("gameover");
+            return;
+        }
+
+        if (world_ && score_.value() >= 1000) {
+            manager_.ctx.finalScore = score_.value();
+            push("victory");
+            return;
         }
 
         world_->update(dt); // Advance game simulation by dt

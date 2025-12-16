@@ -32,8 +32,10 @@
 * [x] Stel release-timers in: 2 ghosts starten meteen, 2 na 5s en 10s (Stopwatch). World start klokken bij levelstart. 
 * [x] Implementeer **collision** Pac-Man ↔ Wall: continuous beweging stopt tegen muur, geen penetratie. Logic: AABB/segment sweep; geen SFML helpers in logic. 
 * [x] Implementeer **collision** Pac-Man ↔ Ghost: in chasing → Pac-Man verliest 1 leven; reset posities naar start; verzamelde items blijven verzameld. In fear → ghost “gegeten” → respawn center, direct chasing. 
-* [ ] Voeg **lives** systeem toe (start met 3). HUD toont resterende levens. Bij 0: LevelState pusht Victory/GameOver state terug naar menu. 
+* [x] Voeg **lives** systeem toe (start met 3). HUD toont resterende levens. Bij 0: LevelState pusht Victory/GameOver state terug naar menu. 
 * [ ] Fix all point increases like ghost deaths pacman deaths and so on
+* [ ] Fix it so max 20fps
+* [ ] Fix ghosts phasing trough walls when coming out of spawn
 * [ ] Detecteer **level clear**: alle coins & fruits opgegeten → verhoog level, bonuspunten, respawn items, ghosts naar center, behoud score & levens. Ghosts sneller, fear korter per level. 
 * [ ] Breid **State** flow uit: Escape → PausedState; van Paused terug naar Level; bij GameOver → Menu; bij Victory → volgende LevelState. Gebruik stack-push/pop. 
 * [ ] Leg **input-mapping** vast in LevelState (app): pijlen zetten gewenste richting in World; geen logic in app; alleen doorgeven van intenties.
