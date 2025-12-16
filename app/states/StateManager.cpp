@@ -17,11 +17,12 @@ std::unique_ptr<State> StateManager::make(const Id& id) {
 
 void StateManager::push(const Id& id) {
     pending_.push_back(Action{ActionType::Push, id}); // Make a new state via the factory and push them
-                                // on top of the stack
+                                                      // on top of the stack
 }
 
 void StateManager::replace(const Id& id) {
-    pending_.push_back(Action{ActionType::Replace, id}); // Place the new state on top of the stack via the make function
+    pending_.push_back(
+        Action{ActionType::Replace, id}); // Place the new state on top of the stack via the make function
 }
 
 void StateManager::pop() {
