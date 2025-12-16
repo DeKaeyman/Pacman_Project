@@ -9,20 +9,20 @@ void VictoryState::init(const sf::RenderWindow& w) {
         return;
     initialized_ = true;
 
-    font_.loadFromFile("assets/fonts/arial.ttf");
+    font_.loadFromFile("assets/fonts/Crackman.otf");
 
     title_.setFont(font_);
     title_.setString("VICTORY!");
-    title_.setCharacterSize(48);
+    title_.setCharacterSize(64);
     title_.setFillColor(sf::Color::Green);
 
     scoreText_.setFont(font_);
-    scoreText_.setCharacterSize(24);
+    scoreText_.setCharacterSize(32);
     scoreText_.setFillColor(sf::Color::White);
     scoreText_.setString("Final score: " + std::to_string(manager_.ctx.finalScore));
 
     hint_.setFont(font_);
-    hint_.setCharacterSize(18);
+    hint_.setCharacterSize(32);
     hint_.setFillColor(sf::Color(200, 200, 200));
     hint_.setString("Press any key to return to menu");
 

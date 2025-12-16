@@ -34,10 +34,9 @@
 * [x] Implementeer **collision** Pac-Man ↔ Ghost: in chasing → Pac-Man verliest 1 leven; reset posities naar start; verzamelde items blijven verzameld. In fear → ghost “gegeten” → respawn center, direct chasing. 
 * [x] Voeg **lives** systeem toe (start met 3). HUD toont resterende levens. Bij 0: LevelState pusht Victory/GameOver state terug naar menu. 
 * [ ] Fix all point increases like ghost deaths pacman deaths and so on
-* [ ] Fix it so max 20fps
 * [ ] Fix ghosts phasing trough walls when coming out of spawn
 * [ ] Detecteer **level clear**: alle coins & fruits opgegeten → verhoog level, bonuspunten, respawn items, ghosts naar center, behoud score & levens. Ghosts sneller, fear korter per level. 
-* [ ] Breid **State** flow uit: Escape → PausedState; van Paused terug naar Level; bij GameOver → Menu; bij Victory → volgende LevelState. Gebruik stack-push/pop. 
+* [x] Breid **State** flow uit: Escape → PausedState; van Paused terug naar Level; bij GameOver → Menu; bij Victory → volgende LevelState. Gebruik stack-push/pop. 
 * [ ] Leg **input-mapping** vast in LevelState (app): pijlen zetten gewenste richting in World; geen logic in app; alleen doorgeven van intenties.
 * [ ] Plaats **Camera** gebruik in tekenpad: Views vragen Camera om wereld→pixel; pas window resize toe zonder logic aan te raken.
 * [x] Maak **AssetManager** in app om textures/fonts/sounds te cachen; paths in `assets/`. (Optioneel geluid later.)
@@ -52,7 +51,7 @@
 * [ ] Maak **config** (ini/json/toml) voor snelheden, timings, tilegrootte; laad in app en geef door aan logic bij World-constructie.
 * [ ] Bewaak **codekwaliteit**: smart pointers overal; expliciete initialisaties; const/override; geen memory leaks (virtuele destructors); referenties i.p.v. kopieën. Voeg clang-format config toe. 
 * [ ] Schrijf **exceptions** voor missende assets/config; vang in app en toon foutmelding in MenuState. 
-* [ ] Integreer **frame cap** (optioneel) in app loop (bijv. 60 FPS), maar logic draait met Stopwatch deltaTime (geen busy waiting). 
+* [x] Integreer **frame cap** (optioneel) in app loop (bijv. 60 FPS), maar logic draait met Stopwatch deltaTime (geen busy waiting). 
 * [ ] Verfijn **path viability**: bij AI beslissingen alleen richtingen zonder wall-botsing; random keuzes via Random singleton. 
 * [ ] Werk **turning** uit: Pac-Man accepteert bufferd richting bij naderen van kruising; als viable, wissel richting soepel.
 * [ ] Voeg **tunnels** toe (optioneel): teleport links↔rechts; update Camera/Views voor wrap-around.

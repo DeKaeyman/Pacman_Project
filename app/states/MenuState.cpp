@@ -17,7 +17,7 @@ constexpr float BUTTON_HEIGHT = 60.0f; // Fixed height for the Play button
 } // namespace
 
 MenuState::MenuState(pacman::app::StateManager& m) : State(m) { // Constructor, forwards StateManager to base class
-    font_.loadFromFile("assets/fonts/arial.ttf");               // Load a font for displaying text
+    font_.loadFromFile("assets/fonts/Crackman.otf");               // Load a font for displaying text
     highscores_ = pacman::logic::Score::loadHighscores(highscorePath_); // Load top 5 highscores from logic layer
 }
 
