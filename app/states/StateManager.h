@@ -1,6 +1,6 @@
 #pragma once
-#include "State.h"
 #include "AppContext.h"
+#include "State.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 #include <functional>
@@ -38,7 +38,10 @@ public:
 
 private:
     enum class ActionType { Push, Replace, Pop, Clear };
-    struct Action { ActionType type; Id id; };
+    struct Action {
+        ActionType type;
+        Id id;
+    };
 
     void applyPending();
     std::vector<Action> pending_;
