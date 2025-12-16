@@ -15,6 +15,8 @@ namespace pacman::app {
 Game::Game(unsigned width, unsigned height, const char* title)
     : window_(sf::VideoMode(width, height), title), camera_(static_cast<int>(width), static_cast<int>(height)) {
 
+    window_.setFramerateLimit(60);
+
     View::setCamera(&camera_); // Give the camera to all views
 
     prepareStateManager(); // request the prepare statement
@@ -38,31 +40,37 @@ void Game::run() {
     auto& stopwatch = pacman::logic::Stopwatch::getInstance();
     stopwatch.reset();
 
-    while (window_.isOpen()) { // Main loop of the window
+    window_.setFramerateLimit(60);
+
+    const double fixedDt = 1.0 / 60.0;
+    double accumulator = 0.0;
+    const double maxFrameDt = 0.25;
+
+    while (window_.isOpen()) {
         sf::Event e{};
-        while (window_.pollEvent(e)) { // Process all system events
-            if (e.type == sf::Event::Closed) {
-                window_.close();
-            } else if (e.type == sf::Event::Resized) {
-                camera_.setViewport(static_cast<int>(e.size.width),
-                                    static_cast<int>(e.size.height)); // Keep the camera in sync with the window size
+        while (window_.pollEvent(e)) {
+            if (e.type == sf::Event::Closed) window_.close();
+            else if (e.type == sf::Event::Resized) {
+                camera_.setViewport((int)e.size.width, (int)e.size.height);
             }
-
-            stateManager_->handleEvent(e); // Proceed to give events to the state manager
+            stateManager_->handleEvent(e);
         }
-
-        if (!window_.isOpen()) {
-            break;
-        }
+        if (!window_.isOpen()) break;
 
         stopwatch.tick();
-        double dt = stopwatch.deltaTime();
+        double frameDt = stopwatch.deltaTime();
+        if (frameDt > maxFrameDt) frameDt = maxFrameDt;
 
-        stateManager_->update(dt);
+        accumulator += frameDt;
 
-        window_.clear();              // Clear the background from the previous frame
-        stateManager_->draw(window_); // Draw the active frame
-        window_.display();            // Switch the buffers
+        while (accumulator >= fixedDt) {
+            stateManager_->update(fixedDt);
+            accumulator -= fixedDt;
+        }
+
+        window_.clear();
+        stateManager_->draw(window_);
+        window_.display();
     }
 }
 } // namespace pacman::app

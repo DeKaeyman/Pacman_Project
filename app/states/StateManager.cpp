@@ -16,23 +16,20 @@ std::unique_ptr<State> StateManager::make(const Id& id) {
 }
 
 void StateManager::push(const Id& id) {
-    stack_.push_back(make(id)); // Make a new state via the factory and push them
+    pending_.push_back(Action{ActionType::Push, id}); // Make a new state via the factory and push them
                                 // on top of the stack
 }
 
 void StateManager::replace(const Id& id) {
-    if (!stack_.empty())
-        stack_.pop_back();      // Removes the current state
-    stack_.push_back(make(id)); // Place the new state on top of the stack via the make function
+    pending_.push_back(Action{ActionType::Replace, id}); // Place the new state on top of the stack via the make function
 }
 
 void StateManager::pop() {
-    if (!stack_.empty())
-        stack_.pop_back(); // Remove the top state and return to the previous one
+    pending_.push_back(Action{ActionType::Pop, {}}); // Remove the top state and return to the previous one
 }
 
 void StateManager::clear() {
-    stack_.clear(); // Clear the full stack
+    pending_.push_back(Action{ActionType::Clear, {}}); // Clear the full stack
 }
 
 void StateManager::applyPending() {
@@ -59,11 +56,15 @@ void StateManager::applyPending() {
 void StateManager::handleEvent(const sf::Event& e) {
     if (!stack_.empty())
         stack_.back()->handleEvent(e); // Send the user input to the current top stack
+
+    applyPending();
 }
 
 void StateManager::update(double dt) {
     if (!stack_.empty())
         stack_.back()->update(dt); // Only allow the top state to execute logic
+
+    applyPending();
 }
 
 void StateManager::draw(sf::RenderWindow& w) {
