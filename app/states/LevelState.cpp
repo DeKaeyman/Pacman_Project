@@ -20,7 +20,7 @@ LevelState::LevelState(pacman::app::StateManager& m) : State(m), tileMap_() { //
     world_ = std::make_unique<pacman::logic::World>(*factory_); // Create world and inject abstract factory
     world_->loadLevel(tileMap_);                                // Build entities based on tile layout
 
-    hudFont_.loadFromFile("assets/fonts/Crackman.otf");         // Load the font for the hud text
+    hudFont_.loadFromFile("assets/fonts/Crackman.otf");      // Load the font for the hud text
     hud_ = std::make_unique<Hud>(score_, *world_, hudFont_); // Create app side hud
 }
 
