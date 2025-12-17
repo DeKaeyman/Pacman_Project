@@ -96,4 +96,16 @@ void PacMan::resetToSpawn() noexcept {
     moved.payload = payload;
     notify(moved);
 }
+
+void PacMan::dieScore() {
+    if (!active)
+        return; // Skip if already collected
+
+    CollectedPayload payload{deathValue_}; // Score value inside payload
+    Event e{};                        // Event object
+    e.type = EventType::Died;    // Event identifies “Ghost collected”
+    e.payload = payload;              // Attach payload data
+
+    notify(e); // Notify views
+}
 } // namespace pacman::logic

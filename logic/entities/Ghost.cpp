@@ -533,4 +533,15 @@ void Ghost::setMode(pacman::logic::GhostMode m) noexcept {
     notify(e); // Notify GhostView to change appearance (blue/normal)
 }
 
+void Ghost::collectScore() {
+    if (!active)
+        return; // Skip if already collected
+
+    CollectedPayload payload{value_}; // Score value inside payload
+    Event e{};                        // Event object
+    e.type = EventType::Collected;    // Event identifies “Ghost collected”
+    e.payload = payload;              // Attach payload data
+
+    notify(e); // Notify views
+}
 } // namespace pacman::logic

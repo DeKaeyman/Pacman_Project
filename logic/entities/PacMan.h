@@ -22,6 +22,7 @@ public:
     void setBounds(const Rect& r) noexcept { bounds_ = r; } // Directly set the bounding box
     void setStartBounds(const Rect& r) noexcept { spawnBounds_ = r; }
     void resetToSpawn() noexcept;
+    void dieScore();
 
 private:
     Rect bounds_{}; // Pacman bounding box in world space
@@ -29,5 +30,7 @@ private:
     Direction desiredDirection_{Direction::Right};
     double speed_{0.0}; // Units per second in world coordinates
     Rect spawnBounds_{};
+
+    int deathValue_{-500};
 };
 } // namespace pacman::logic

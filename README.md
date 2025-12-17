@@ -33,8 +33,8 @@
 * [x] Implementeer **collision** Pac-Man ↔ Wall: continuous beweging stopt tegen muur, geen penetratie. Logic: AABB/segment sweep; geen SFML helpers in logic. 
 * [x] Implementeer **collision** Pac-Man ↔ Ghost: in chasing → Pac-Man verliest 1 leven; reset posities naar start; verzamelde items blijven verzameld. In fear → ghost “gegeten” → respawn center, direct chasing. 
 * [x] Voeg **lives** systeem toe (start met 3). HUD toont resterende levens. Bij 0: LevelState pusht Victory/GameOver state terug naar menu. 
-* [ ] Fix all point increases like ghost deaths pacman deaths and so on
-* [ ] Fix ghosts phasing trough walls when coming out of spawn
+* [x] Fix all point increases like ghost deaths pacman deaths and so on
+* [x] Fix ghosts phasing trough walls when coming out of spawn
 * [ ] Detecteer **level clear**: alle coins & fruits opgegeten → verhoog level, bonuspunten, respawn items, ghosts naar center, behoud score & levens. Ghosts sneller, fear korter per level. 
 * [x] Breid **State** flow uit: Escape → PausedState; van Paused terug naar Level; bij GameOver → Menu; bij Victory → volgende LevelState. Gebruik stack-push/pop. 
 * [ ] Leg **input-mapping** vast in LevelState (app): pijlen zetten gewenste richting in World; geen logic in app; alleen doorgeven van intenties.
@@ -53,7 +53,7 @@
 * [ ] Schrijf **exceptions** voor missende assets/config; vang in app en toon foutmelding in MenuState. 
 * [x] Integreer **frame cap** (optioneel) in app loop (bijv. 60 FPS), maar logic draait met Stopwatch deltaTime (geen busy waiting). 
 * [ ] Verfijn **path viability**: bij AI beslissingen alleen richtingen zonder wall-botsing; random keuzes via Random singleton. 
-* [ ] Werk **turning** uit: Pac-Man accepteert bufferd richting bij naderen van kruising; als viable, wissel richting soepel.
+* [x] Werk **turning** uit: Pac-Man accepteert bufferd richting bij naderen van kruising; als viable, wissel richting soepel.
 * [ ] Voeg **tunnels** toe (optioneel): teleport links↔rechts; update Camera/Views voor wrap-around.
 * [ ] Implementeer **ghost house** logica (center spawn) en release-poort; eaten ghosts keren als ogen terug naar center en hergroenen naar chasing. 
 * [ ] Breid **HUD** uit met timers: fear-resttijd, level, score multiplier (op basis van coin-combo). 

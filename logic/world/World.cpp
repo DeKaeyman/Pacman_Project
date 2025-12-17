@@ -267,6 +267,7 @@ void World::resolveOverlaps() {
 
 void World::respawnEatenGhost(Ghost& ghost) {
     ghost.resetToSpawn();
+    ghost.collectScore();
 
     for (auto& e : entities_) {
         auto g = std::dynamic_pointer_cast<Ghost>(e);
@@ -287,6 +288,7 @@ void World::resetActorsAfterPacmanHit(PacMan& pac) {
         lives_--;
 
     pac.resetToSpawn();
+    pac.dieScore();
 
     stopFearMode();
 

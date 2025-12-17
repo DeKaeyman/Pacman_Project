@@ -43,6 +43,7 @@ public:
 
     void setStartBounds(const Rect& r) noexcept { spawnBounds_ = r; }
 
+    void collectScore();
 private:
     // High-level AI dispatch
     void applyStrategy(double dt);
@@ -69,6 +70,8 @@ private:
     GhostKind kind_{GhostKind::A};         // Ghost type used for selecting AI behavior
     GhostMode mode_{GhostMode::Chase};     // Ghost mode used for selecting AI behavior
     double baseSpeed_{0.0};
+
+    int value_{200};
 
     World* world_{nullptr}; // World context for AI queries
 };

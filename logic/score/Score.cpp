@@ -79,6 +79,11 @@ void Score::onEvent(const pacman::logic::Event& e) {
     }
 
     case EventType::Died:
+        if (auto payload = std::get_if<CollectedPayload>(&e.payload)) {
+            int deathPenalty_ = payload->value;
+            add(deathPenalty_);
+            if (currentScore_ < 0) currentScore_ = 0;
+        }
         break;
 
     case EventType::Moved:

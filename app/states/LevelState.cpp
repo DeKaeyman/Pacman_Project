@@ -61,7 +61,7 @@ void LevelState::update(double dt) {
             return;
         }
 
-        if (world_ && score_.value() >= 1000) {
+        if (world_ && score_.value() >= 10000) {
             manager_.ctx.finalScore = score_.value();
             push("victory");
             return;
