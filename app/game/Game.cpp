@@ -13,7 +13,8 @@
 namespace pacman::app {
 
 Game::Game(unsigned width, unsigned height, const char* title)
-    : window_(sf::VideoMode(width, height), title, sf::Style::Titlebar | sf::Style::Close), camera_(static_cast<int>(width), static_cast<int>(height)) {
+    : window_(sf::VideoMode(width, height), title, sf::Style::Titlebar | sf::Style::Close),
+      camera_(static_cast<int>(width), static_cast<int>(height)) {
 
     window_.setFramerateLimit(60);
 

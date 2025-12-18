@@ -46,6 +46,7 @@ public:
     void collectScore();
 
     double baseSpeed() const noexcept { return baseSpeed_; }
+
 private:
     // High-level AI dispatch
     void applyStrategy(double dt);

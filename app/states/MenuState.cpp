@@ -23,7 +23,7 @@ MenuState::MenuState(pacman::app::StateManager& m) : State(m) { // Constructor, 
 
 void MenuState::handleEvent(const sf::Event& e) {
     if (e.type == sf::Event::KeyPressed) { // When enter is pressed -> Go to level state
-        push("level");                       // push new level state on the state stack
+        push("level");                     // push new level state on the state stack
         return;
     }
 

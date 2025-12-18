@@ -52,7 +52,8 @@ void LevelState::handleEvent(const sf::Event& e) {
 }
 
 void LevelState::update(double dt) {
-    if (!world_) return;
+    if (!world_)
+        return;
 
     if (startDelayTimer_ > 0.0) {
         startDelayTimer_ -= dt;

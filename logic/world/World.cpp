@@ -314,10 +314,13 @@ void World::resetActorsAfterPacmanHit(PacMan& pac) {
 
 bool World::isLevelCleared() const noexcept {
     for (const auto& e : entities_) {
-        if (!e || !e->active) continue;
+        if (!e || !e->active)
+            continue;
 
-        if (dynamic_cast<const Coin*>(e.get()) != nullptr)  return false;
-        if (dynamic_cast<const Fruit*>(e.get()) != nullptr) return false;
+        if (dynamic_cast<const Coin*>(e.get()) != nullptr)
+            return false;
+        if (dynamic_cast<const Fruit*>(e.get()) != nullptr)
+            return false;
     }
     return true;
 }
@@ -375,7 +378,8 @@ void World::applyLevelSpeedBoost() {
     const double factor = 1.0 + 0.09 * (currentLevel_ - 1);
 
     for (auto& e : entities_) {
-        if (!e || !e->active) continue;
+        if (!e || !e->active)
+            continue;
 
         if (auto pac = dynamic_cast<PacMan*>(e.get())) {
             pac->setSpeed(pac->baseSpeed() * factor);

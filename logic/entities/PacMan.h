@@ -17,8 +17,8 @@ public:
     Direction direction() const noexcept { return direction_; } // Get current movement direction
     void setDesiredDirection(Direction dir) noexcept;
     Direction desiredDirection() const noexcept { return desiredDirection_; }
-    void setSpeed(double s) noexcept { speed_ = s; }        // Set movement speed
-    double speed() const noexcept { return speed_; }        // Get movement speed
+    void setSpeed(double s) noexcept { speed_ = s; } // Set movement speed
+    double speed() const noexcept { return speed_; } // Get movement speed
     double baseSpeed() const noexcept { return baseSpeed_; }
     void setBounds(const Rect& r) noexcept { bounds_ = r; } // Directly set the bounding box
     void setStartBounds(const Rect& r) noexcept { spawnBounds_ = r; }
