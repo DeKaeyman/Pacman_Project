@@ -1,54 +1,162 @@
+// PausedState.cpp
 #include "PausedState.h"
-#include <SFML/Graphics/RectangleShape.hpp>
+
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/Mouse.hpp>
 
 namespace pacman::app {
 
-void PausedState::init(const sf::RenderWindow& w) {
-    if (initialized_)
-        return;
-    initialized_ = true;
+    namespace {
+        constexpr float BTN_W = 260.f;
+        constexpr float BTN_H = 64.f;
+        constexpr float BTN_GAP = 18.f;
+    } // namespace
 
-    font_.loadFromFile("assets/fonts/Crackman.otf");
+    void PausedState::init(const sf::RenderWindow& w) {
+        if (initialized_)
+            return;
+        initialized_ = true;
 
-    title_.setFont(font_);
-    title_.setString("PAUSED");
-    title_.setCharacterSize(64);
-    title_.setFillColor(sf::Color::Yellow);
-    title_.setOutlineThickness(2.f);
-    title_.setOutlineColor(sf::Color::Black);
+        font_.loadFromFile("assets/fonts/Crackman.otf");
 
-    hint_.setFont(font_);
-    hint_.setString("Press ESC to resume");
-    hint_.setCharacterSize(32);
-    hint_.setFillColor(sf::Color(220, 220, 220));
+        title_.setFont(font_);
+        title_.setString("PAUSED");
+        title_.setCharacterSize(72);
+        title_.setFillColor(sf::Color::Yellow);
+        title_.setOutlineThickness(3.f);
+        title_.setOutlineColor(sf::Color::Black);
 
-    auto center = [&](sf::Text& t, float y) {
-        auto b = t.getLocalBounds();
-        t.setOrigin(b.width / 2.f, b.height / 2.f);
-        t.setPosition(w.getSize().x / 2.f, y);
-    };
+        overlay_.setFillColor(sf::Color(0, 0, 0, 170));
 
-    center(title_, w.getSize().y / 2.f - 40.f);
-    center(hint_, w.getSize().y / 2.f + 30.f);
-}
+        buttons_.resize(3);
 
-void PausedState::handleEvent(const sf::Event& e) {
-    if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Escape) {
-        pop();
+        const char* labels[3] = {"RESUME", "RESTART", "MENU"};
+        for (std::size_t i = 0; i < buttons_.size(); ++i) {
+            buttons_[i].rect.setSize({BTN_W, BTN_H});
+            buttons_[i].rect.setFillColor(sf::Color(30, 30, 30, 220));
+            buttons_[i].rect.setOutlineThickness(3.f);
+            buttons_[i].rect.setOutlineColor(sf::Color::White);
+
+            buttons_[i].label.setFont(font_);
+            buttons_[i].label.setString(labels[i]);
+            buttons_[i].label.setCharacterSize(32);
+            buttons_[i].label.setFillColor(sf::Color::White);
+        }
+
+        layout(w);
     }
-}
 
-void PausedState::draw(sf::RenderWindow& w) {
-    init(w);
+    void PausedState::layout(const sf::RenderWindow& w) {
+        // Overlay size (Vector2u -> Vector2f)
+        const auto ws = w.getSize();
+        overlay_.setSize(sf::Vector2f{static_cast<float>(ws.x), static_cast<float>(ws.y)});
 
-    sf::RectangleShape overlay;
-    overlay.setSize(sf::Vector2f(w.getSize()));
-    overlay.setFillColor(sf::Color(0, 0, 0, 150));
+        auto centerTextX = [](sf::Text& t) {
+            auto b = t.getLocalBounds();
+            t.setOrigin(b.left + b.width * 0.5f, b.top + b.height * 0.5f);
+        };
 
-    w.draw(overlay);
-    w.draw(title_);
-    w.draw(hint_);
-}
+        // Title position
+        centerTextX(title_);
+        title_.setPosition(static_cast<float>(ws.x) * 0.5f, static_cast<float>(ws.y) * 0.25f);
+
+        // Buttons block
+        const float cx = static_cast<float>(ws.x) * 0.5f;
+        const float startY = static_cast<float>(ws.y) * 0.45f;
+
+        for (std::size_t i = 0; i < buttons_.size(); ++i) {
+            auto& b = buttons_[i];
+
+            b.rect.setOrigin(BTN_W * 0.5f, BTN_H * 0.5f);
+            b.rect.setPosition(cx, startY + i * (BTN_H + BTN_GAP));
+
+            centerTextX(b.label);
+            b.label.setPosition(b.rect.getPosition().x, b.rect.getPosition().y - 2.f);
+        }
+    }
+
+    bool PausedState::hitButton(std::size_t i, float mx, float my) const {
+        const auto& r = buttons_[i].rect;
+        const auto p = r.getPosition();
+        const auto o = r.getOrigin();
+        const auto s = r.getSize();
+
+        const float left = p.x - o.x;
+        const float top = p.y - o.y;
+        const float right = left + s.x;
+        const float bottom = top + s.y;
+
+        return (mx >= left && mx <= right && my >= top && my <= bottom);
+    }
+
+    void PausedState::handleEvent(const sf::Event& e) {
+        if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Escape) {
+            pop(); // resume
+            return;
+        }
+
+        if (e.type == sf::Event::Resized) {
+            // Not strictly needed if your Game already handles camera,
+            // but we DO need to re-layout the UI.
+            // We can't access window here, so do it in draw() each frame.
+            return;
+        }
+
+        if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left) {
+            const float mx = static_cast<float>(e.mouseButton.x);
+            const float my = static_cast<float>(e.mouseButton.y);
+
+            // Resume
+            if (hitButton(0, mx, my)) {
+                pop();
+                return;
+            }
+
+            // Restart: remove Pause + Level, then start fresh Level
+            if (hitButton(1, mx, my)) {
+                pop(); // Paused
+                pop(); // Level
+                push("level");
+                return;
+            }
+
+            // Menu: remove Pause + Level, then go Menu
+            if (hitButton(2, mx, my)) {
+                pop(); // Paused
+                pop(); // Level
+                push("menu");
+                return;
+            }
+        }
+    }
+
+    void PausedState::draw(sf::RenderWindow& w) {
+        init(w);
+
+        // Ensure UI follows window size changes
+        layout(w);
+
+        w.draw(overlay_);
+        w.draw(title_);
+
+        // Hover effect (optional but nice)
+        const auto mp = sf::Mouse::getPosition(w);
+        const float mx = static_cast<float>(mp.x);
+        const float my = static_cast<float>(mp.y);
+
+        for (std::size_t i = 0; i < buttons_.size(); ++i) {
+            auto& b = buttons_[i];
+
+            if (hitButton(i, mx, my)) {
+                b.rect.setFillColor(sf::Color(70, 70, 70, 230));
+            } else {
+                b.rect.setFillColor(sf::Color(30, 30, 30, 220));
+            }
+
+            w.draw(b.rect);
+            w.draw(b.label);
+        }
+    }
+
 } // namespace pacman::app

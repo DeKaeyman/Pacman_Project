@@ -44,6 +44,8 @@ public:
     void setStartBounds(const Rect& r) noexcept { spawnBounds_ = r; }
 
     void collectScore();
+
+    double baseSpeed() const noexcept { return baseSpeed_; }
 private:
     // High-level AI dispatch
     void applyStrategy(double dt);

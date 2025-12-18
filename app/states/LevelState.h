@@ -29,6 +29,9 @@ private:
     std::unique_ptr<ConcreteFactory> factory_;                  // Creates model + attaches views for this level
     logic::Direction desiredDirection_{logic::Direction::None}; // Last request direction from player input
 
+    double startDelay_ = 1.0;
+    double startDelayTimer_ = 0.0;
+
     logic::Score score_;
     sf::Font hudFont_;
     std::unique_ptr<Hud> hud_;

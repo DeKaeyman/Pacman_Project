@@ -20,6 +20,8 @@ public:
             v->draw(w); // Delegate draw to each view
     }
 
+    void clear() {views_.clear(); }
+
     std::vector<Ptr>& raw() { return views_; } // Expose container for management
 
 private:

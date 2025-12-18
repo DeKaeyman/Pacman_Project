@@ -22,6 +22,8 @@ LevelState::LevelState(pacman::app::StateManager& m) : State(m), tileMap_() { //
 
     hudFont_.loadFromFile("assets/fonts/Crackman.otf");      // Load the font for the hud text
     hud_ = std::make_unique<Hud>(score_, *world_, hudFont_); // Create app side hud
+
+    startDelayTimer_ = startDelay_;
 }
 
 void LevelState::handleEvent(const sf::Event& e) {
@@ -50,24 +52,54 @@ void LevelState::handleEvent(const sf::Event& e) {
 }
 
 void LevelState::update(double dt) {
-    if (world_) { // Only update if world exists
-        if (desiredDirection_ != pacman::logic::Direction::None) {
-            world_->setPacManDirection(desiredDirection_);
-        }
+    if (!world_) return;
 
-        if (world_ && world_->isGameOver()) {
-            manager_.ctx.finalScore = score_.value();
-            push("gameover");
-            return;
-        }
+    if (startDelayTimer_ > 0.0) {
+        startDelayTimer_ -= dt;
+        if (startDelayTimer_ < 0.0)
+            startDelayTimer_ = 0.0;
 
-        if (world_ && score_.value() >= 10000) {
-            manager_.ctx.finalScore = score_.value();
-            push("victory");
-            return;
-        }
+        world_->tickAnimationsOnly();
+        return;
+    }
 
-        world_->update(dt); // Advance game simulation by dt
+    if (desiredDirection_ != pacman::logic::Direction::None) {
+        world_->setPacManDirection(desiredDirection_);
+    }
+
+    if (world_->isGameOver()) {
+        const int final = score_.value();
+        manager_.ctx.finalScore = final;
+
+        auto highs = pacman::logic::Score::loadHighscores("assets/data/highscores.txt");
+        highs = pacman::logic::Score::updateHighscores(highs, final);
+        pacman::logic::Score::saveHighscores("assets/data/highscores.txt", highs);
+
+        push("gameover");
+        return;
+    }
+
+    if (score_.value() >= 1000) {
+        const int final = score_.value();
+        manager_.ctx.finalScore = final;
+
+        auto highs = pacman::logic::Score::loadHighscores("assets/data/highscores.txt");
+        highs = pacman::logic::Score::updateHighscores(highs, final);
+        pacman::logic::Score::saveHighscores("assets/data/highscores.txt", highs);
+
+        push("victory");
+        return;
+    }
+
+    world_->update(dt); // Advance game simulation by dt
+
+    if (world_->isLevelCleared()) {
+        factory_->views().clear();
+        world_->advanceLevel();
+        desiredDirection_ = pacman::logic::Direction::None;
+
+        startDelayTimer_ = startDelay_;
+        return;
     }
 }
 

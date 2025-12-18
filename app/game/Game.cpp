@@ -13,7 +13,7 @@
 namespace pacman::app {
 
 Game::Game(unsigned width, unsigned height, const char* title)
-    : window_(sf::VideoMode(width, height), title), camera_(static_cast<int>(width), static_cast<int>(height)) {
+    : window_(sf::VideoMode(width, height), title, sf::Style::Titlebar | sf::Style::Close), camera_(static_cast<int>(width), static_cast<int>(height)) {
 
     window_.setFramerateLimit(60);
 
@@ -51,9 +51,6 @@ void Game::run() {
         while (window_.pollEvent(e)) {
             if (e.type == sf::Event::Closed)
                 window_.close();
-            else if (e.type == sf::Event::Resized) {
-                camera_.setViewport((int)e.size.width, (int)e.size.height);
-            }
             stateManager_->handleEvent(e);
         }
         if (!window_.isOpen())

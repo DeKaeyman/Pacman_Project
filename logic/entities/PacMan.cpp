@@ -5,7 +5,7 @@
 namespace pacman::logic {
 
 PacMan::PacMan(const pacman::logic::Rect& startBounds, double speed)
-    : bounds_(startBounds), speed_(speed), spawnBounds_(startBounds) {
+    : bounds_(startBounds), speed_(speed), spawnBounds_(startBounds), baseSpeed_(speed) {
     solid = true;  // Pacman collides with walls/ghosts
     active = true; // Pacman is alive/visible
 }

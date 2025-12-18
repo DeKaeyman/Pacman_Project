@@ -79,6 +79,7 @@ public:
     } // exports all collisions from last update moment²&
 
     // Level flow
+    void tickAnimationsOnly();
     void resetLevel();   // reset to startstate
     void advanceLevel(); // go to next level
     int currentLevel() const { return currentLevel_; }
@@ -97,6 +98,13 @@ public:
 
     const Wall* ghostGate() const noexcept;
     bool canGhostPassGate(const Ghost* g) const noexcept;
+
+    bool isLevelCleared() const noexcept;
+
+    void startDelay(double seconds = 1.0) noexcept {
+        startDelayDuration_ = seconds;
+        startDelayTimer_ = seconds;
+    }
 
 private:
     bool checkPacmanDesiredDirection(PacMan& pac,
@@ -119,6 +127,8 @@ private:
 
     void respawnEatenGhost(Ghost& ghost);
     void resetActorsAfterPacmanHit(PacMan& pac);
+
+    void applyLevelSpeedBoost();
 
 private:
     AbstractFactory* factory_{nullptr};
@@ -147,5 +157,8 @@ private:
 
     std::weak_ptr<Wall> ghostGateWall_; // the wall that blocks the gate
     std::vector<GatePass> gatePass_;
+
+    double startDelayTimer_{0.0};
+    double startDelayDuration_{1.0};
 };
 } // namespace pacman::logic

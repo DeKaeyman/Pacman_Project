@@ -52,16 +52,24 @@ const Entity* World::get(EntityId id) const { // Const variant for only read acc
 void World::update(double dt) {
     updateGhostRelease();
 
-    handlePacManTurning(dt); // 1) apply buffered input to Pac-Man if possible
-    updateEntities(dt);      // 2) move all entities
+    handlePacManTurning(dt);
+    updateEntities(dt);
 
-    updateCollisions(); // 3) hard collisions
+    updateCollisions();
     resolveCollisions();
 
-    updateOverlaps(); // 4) soft overlaps
+    updateOverlaps();
     resolveOverlaps();
 
     updateFearTimer(dt);
+}
+
+void World::tickAnimationsOnly() {
+    for (auto& e : entities_) {
+        if (e && e->active) {
+            e->update(0.0);
+        }
+    }
 }
 
 void World::handlePacManTurning(double dt) {
@@ -301,6 +309,17 @@ void World::resetActorsAfterPacmanHit(PacMan& pac) {
     }
 
     startGhostReleaseClocks();
+    startDelay(1.0);
+}
+
+bool World::isLevelCleared() const noexcept {
+    for (const auto& e : entities_) {
+        if (!e || !e->active) continue;
+
+        if (dynamic_cast<const Coin*>(e.get()) != nullptr)  return false;
+        if (dynamic_cast<const Fruit*>(e.get()) != nullptr) return false;
+    }
+    return true;
 }
 
 bool World::checkPacmanDesiredDirection(PacMan& pac, double dt) {
@@ -348,7 +367,22 @@ void World::resetLevel() {
 
 void World::advanceLevel() {
     currentLevel_++;
-    resetLevel(); // Start new level
+    loadLevel(tileMap_);
+    applyLevelSpeedBoost();
+}
+
+void World::applyLevelSpeedBoost() {
+    const double factor = 1.0 + 0.09 * (currentLevel_ - 1);
+
+    for (auto& e : entities_) {
+        if (!e || !e->active) continue;
+
+        if (auto pac = dynamic_cast<PacMan*>(e.get())) {
+            pac->setSpeed(pac->baseSpeed() * factor);
+        } else if (auto g = dynamic_cast<Ghost*>(e.get())) {
+            g->setSpeed(g->baseSpeed() * factor);
+        }
+    }
 }
 
 void World::loadLevel(const pacman::logic::TileMap& map) {
@@ -476,6 +510,7 @@ void World::loadLevel(const pacman::logic::TileMap& map) {
     startGhostReleaseClocks();
     snapshotLevelTemplate(); // Store current entity setup as "initial state" for
                              // reset
+    startDelay(1.0);
 }
 
 const Wall* World::ghostGate() const noexcept {
