@@ -7,38 +7,38 @@
 
 namespace pacman::app {
 
+/**
+ * @brief State shown when the player wins; displays final score and returns to menu on key press.
+ */
+class VictoryState : public State {
+public:
+    using State::State;
+
     /**
-     * @brief State shown when the player wins; displays final score and returns to menu on key press.
+     * @brief Handles input for leaving the state.
+     * @param event The SFML event to process.
      */
-    class VictoryState : public State {
-    public:
-        using State::State;
+    void handleEvent(const sf::Event& event) override;
 
-        /**
-         * @brief Handles input for leaving the state.
-         * @param event The SFML event to process.
-         */
-        void handleEvent(const sf::Event& event) override;
+    /**
+     * @brief Draws the victory UI.
+     * @param window The render window to draw to.
+     */
+    void draw(sf::RenderWindow& window) override;
 
-        /**
-         * @brief Draws the victory UI.
-         * @param window The render window to draw to.
-         */
-        void draw(sf::RenderWindow& window) override;
+private:
+    /**
+     * @brief Performs one-time initialization of fonts and text objects.
+     * @param window Render window used to compute layout.
+     */
+    void init(const sf::RenderWindow& window);
 
-    private:
-        /**
-         * @brief Performs one-time initialization of fonts and text objects.
-         * @param window Render window used to compute layout.
-         */
-        void init(const sf::RenderWindow& window);
+private:
+    bool initialized_{false};
 
-    private:
-        bool initialized_{false};
-
-        sf::Font font_;
-        sf::Text title_;
-        sf::Text hint_;
-    };
+    sf::Font font_;
+    sf::Text title_;
+    sf::Text hint_;
+};
 
 } // namespace pacman::app
