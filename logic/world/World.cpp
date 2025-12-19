@@ -493,6 +493,8 @@ namespace pacman::logic {
                 g->setSpeed(g->baseSpeed() * factor);
             }
         }
+
+        fearDuration_ = fearDuration_ * 0.9;
     }
 
     /**

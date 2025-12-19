@@ -100,6 +100,7 @@ namespace pacman::app {
         if (world_->isLevelCleared()) {
             factory_->views().clear();
             world_->advanceLevel();
+            score_.add(1000);
             desiredDirection_ = pacman::logic::Direction::None;
             startDelayTimer_ = startDelay_;
             push("victory");
