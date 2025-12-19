@@ -8,32 +8,32 @@
 
 namespace pacman::app {
 
+/**
+ * @brief Heads-up display showing score, lives, and current level.
+ */
+class Hud {
+public:
     /**
-     * @brief Heads-up display showing score, lives, and current level.
+     * @brief Constructs the HUD using shared game data and a common font.
+     * @param score Reference to the global score tracker.
+     * @param world Reference to the game world.
+     * @param font Font used for rendering text.
      */
-    class Hud {
-    public:
-        /**
-         * @brief Constructs the HUD using shared game data and a common font.
-         * @param score Reference to the global score tracker.
-         * @param world Reference to the game world.
-         * @param font Font used for rendering text.
-         */
-        Hud(logic::Score& score, logic::World& world, const sf::Font& font);
+    Hud(logic::Score& score, logic::World& world, const sf::Font& font);
 
-        /**
-         * @brief Draws the HUD text elements.
-         * @param window The render window to draw to.
-         */
-        void draw(sf::RenderWindow& window);
+    /**
+     * @brief Draws the HUD text elements.
+     * @param window The render window to draw to.
+     */
+    void draw(sf::RenderWindow& window);
 
-    private:
-        logic::Score& score_;
-        logic::World& world_;
+private:
+    logic::Score& score_;
+    logic::World& world_;
 
-        sf::Text scoreText_;
-        sf::Text livesText_;
-        sf::Text levelText_;
-    };
+    sf::Text scoreText_;
+    sf::Text livesText_;
+    sf::Text levelText_;
+};
 
 } // namespace pacman::app
