@@ -1,4 +1,3 @@
-// logic/entities/PacMan.h
 #pragma once
 
 #include "Direction.h"
@@ -7,32 +6,117 @@
 
 namespace pacman::logic {
 
-class PacMan : public Entity, public Subject { // Logic only model for Pacman
-public:
-    PacMan(const Rect& startBounds, double speed = 0.4f);
+    /**
+     * @brief Logic-only model for Pac-Man.
+     *
+     * Pac-Man is an entity that:
+     * - moves continuously in its current direction using a speed (world units per second),
+     * - emits Tick events each update step,
+     * - emits Moved events when its bounds change,
+     * - emits StateChanged events when its movement direction changes,
+     * - can be reset back to a spawn position,
+     * - can emit a Died event with a score payload (as implemented).
+     */
+    class PacMan : public Entity, public Subject {
+    public:
+        /**
+         * @brief Constructs Pac-Man with initial bounds and movement speed.
+         * @param startBounds Initial world-space bounds.
+         * @param speed Movement speed in world units per second.
+         */
+        PacMan(const Rect& startBounds, double speed = 0.4);
 
-    Rect bounds() const override { return bounds_; } // Current bounding box of Pacman
-    void update(double dt) override;                 // Continuous movement based on current direction and speed
-    void setDirection(Direction dir) noexcept;       // Set the current movement direction
-    Direction direction() const noexcept { return direction_; } // Get current movement direction
-    void setDesiredDirection(Direction dir) noexcept;
-    Direction desiredDirection() const noexcept { return desiredDirection_; }
-    void setSpeed(double s) noexcept { speed_ = s; } // Set movement speed
-    double speed() const noexcept { return speed_; } // Get movement speed
-    double baseSpeed() const noexcept { return baseSpeed_; }
-    void setBounds(const Rect& r) noexcept { bounds_ = r; } // Directly set the bounding box
-    void setStartBounds(const Rect& r) noexcept { spawnBounds_ = r; }
-    void resetToSpawn() noexcept;
-    void dieScore();
+        /**
+         * @brief Returns the current world-space bounds of Pac-Man.
+         * @return Bounding rectangle.
+         */
+        Rect bounds() const override { return bounds_; }
 
-private:
-    Rect bounds_{}; // Pacman bounding box in world space
-    Direction direction_{Direction::None};
-    Direction desiredDirection_{Direction::Right};
-    double speed_{0.0}; // Units per second in world coordinates
-    double baseSpeed_{0.0};
-    Rect spawnBounds_{};
+        /**
+         * @brief Advances Pac-Man movement and emits Tick/Moved events.
+         * @param dt Time step in seconds.
+         */
+        void update(double dt) override;
 
-    int deathValue_{-500};
-};
+        /**
+         * @brief Sets the current applied movement direction.
+         *
+         * If the direction changes, a StateChanged event is emitted with
+         * an integer code describing the new direction (as implemented).
+         *
+         * @param dir New movement direction.
+         */
+        void setDirection(Direction dir) noexcept;
+
+        /**
+         * @brief Returns the currently applied movement direction.
+         * @return Current direction.
+         */
+        Direction direction() const noexcept { return direction_; }
+
+        /**
+         * @brief Sets the desired (requested) direction.
+         * @param dir Requested movement direction.
+         */
+        void setDesiredDirection(Direction dir) noexcept;
+
+        /**
+         * @brief Returns the desired (requested) direction.
+         * @return Desired direction.
+         */
+        Direction desiredDirection() const noexcept { return desiredDirection_; }
+
+        /**
+         * @brief Sets the movement speed in world units per second.
+         * @param speed New speed.
+         */
+        void setSpeed(double speed) noexcept { speed_ = speed; }
+
+        /**
+         * @brief Returns the current movement speed.
+         * @return Speed in world units per second.
+         */
+        double speed() const noexcept { return speed_; }
+
+        /**
+         * @brief Returns the base speed stored at construction.
+         * @return Base speed.
+         */
+        double baseSpeed() const noexcept { return baseSpeed_; }
+
+        /**
+         * @brief Directly sets Pac-Man bounds in world space.
+         * @param bounds New bounding rectangle.
+         */
+        void setBounds(const Rect& bounds) noexcept { bounds_ = bounds; }
+
+        /**
+         * @brief Sets the spawn bounds used by resetToSpawn().
+         * @param bounds New spawn bounding rectangle.
+         */
+        void setStartBounds(const Rect& bounds) noexcept { spawnBounds_ = bounds; }
+
+        /**
+         * @brief Resets Pac-Man to its spawn bounds and clears movement state.
+         */
+        void resetToSpawn() noexcept;
+
+        /**
+         * @brief Emits a Died event with the configured death score value.
+         */
+        void dieScore();
+
+    private:
+        Rect bounds_{};
+        Direction direction_{Direction::None};
+        Direction desiredDirection_{Direction::Right};
+
+        double speed_{0.0};
+        double baseSpeed_{0.0};
+
+        Rect spawnBounds_{};
+
+        int deathValue_{-500};
+    };
+
 } // namespace pacman::logic

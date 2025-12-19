@@ -1,23 +1,44 @@
-// MenuState.h
 #pragma once
+
 #include "State.h"
+
 #include <SFML/Graphics/Font.hpp>
+
+#include <string>
+#include <vector>
 
 namespace pacman::app {
 
-class MenuState : public State {
-public:
-    explicit MenuState(StateManager& m); // Constructor receives reference to the StateManager
+    /**
+     * @brief Main menu state that displays title, highscores, and a button to start the game.
+     */
+    class MenuState : public State {
+    public:
+        /**
+         * @brief Constructs the menu state and loads required resources.
+         * @param manager Reference to the central StateManager.
+         */
+        explicit MenuState(StateManager& manager);
 
-    void handleEvent(const sf::Event& e) override; // Handles keyboard and mouse input
-    void draw(sf::RenderWindow& w) override;       // Draws the menu elements
+        /**
+         * @brief Handles keyboard and mouse input for starting the level.
+         * @param event The SFML event to process.
+         */
+        void handleEvent(const sf::Event& event) override;
 
-private:
-    sf::Font font_;                  // Font used for all texts
-    unsigned int windowWidth_{800};  // Stores last known window width
-    unsigned int windowHeight_{600}; // Stores last known window height
+        /**
+         * @brief Draws the menu UI elements.
+         * @param window The render window to draw to.
+         */
+        void draw(sf::RenderWindow& window) override;
 
-    std::vector<int> highscores_; // Stores the loaded top 5 highscores from logic::Score
-    const std::string highscorePath_{"assets/data/highscores.txt"}; // Path to the highscore file
-};
+    private:
+        sf::Font font_;
+        unsigned int windowWidth_{800};
+        unsigned int windowHeight_{600};
+
+        std::vector<int> highscores_;
+        const std::string highscorePath_{"assets/data/highscores.txt"};
+    };
+
 } // namespace pacman::app

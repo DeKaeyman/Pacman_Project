@@ -1,24 +1,44 @@
 #pragma once
+
 #include "State.h"
+
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Text.hpp>
 
 namespace pacman::app {
 
-class VictoryState : public State {
-public:
-    using State::State;
+    /**
+     * @brief State shown when the player wins; displays final score and returns to menu on key press.
+     */
+    class VictoryState : public State {
+    public:
+        using State::State;
 
-    void handleEvent(const sf::Event& e) override;
-    void draw(sf::RenderWindow& w) override;
+        /**
+         * @brief Handles input for leaving the state.
+         * @param event The SFML event to process.
+         */
+        void handleEvent(const sf::Event& event) override;
 
-private:
-    sf::Font font_;
-    sf::Text title_;
-    sf::Text scoreText_;
-    sf::Text hint_;
-    bool initialized_ = false;
+        /**
+         * @brief Draws the victory UI.
+         * @param window The render window to draw to.
+         */
+        void draw(sf::RenderWindow& window) override;
 
-    void init(const sf::RenderWindow& w);
-};
+    private:
+        /**
+         * @brief Performs one-time initialization of fonts and text objects.
+         * @param window Render window used to compute layout.
+         */
+        void init(const sf::RenderWindow& window);
+
+    private:
+        bool initialized_{false};
+
+        sf::Font font_;
+        sf::Text title_;
+        sf::Text hint_;
+    };
+
 } // namespace pacman::app

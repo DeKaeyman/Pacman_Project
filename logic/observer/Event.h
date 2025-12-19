@@ -1,38 +1,63 @@
 #pragma once
+
 #include <cstdint>
 #include <variant>
 
 namespace pacman::logic {
 
-enum class EventType : std::uint8_t { // Kinds of domain events emitted by
-                                      // models
-    Tick,                             // Per update
-    Moved,                            // Position/size change of an entity
-    StateChanged,                     // State change code (e.g. mode/phase)
-    Collected,                        // Item collected with value attached
-    Died,                             // Entity death
-};
+    /**
+     * @brief Enumeration of all domain events emitted by logic entities.
+     */
+    enum class EventType : std::uint8_t {
+        Tick,
+        Moved,
+        StateChanged,
+        Collected,
+        Died
+    };
 
-struct Vec2 {
-    float x{}, y{};
-}; // Simple 2D vector for positions/sizes
+    /**
+     * @brief Simple 2D vector structure.
+     */
+    struct Vec2 {
+        float x{};
+        float y{};
+    };
 
-struct MovedPayload {
-    Vec2 pos;
-    Vec2 size;
-}; // Data for movement/resize events
-struct StateChangedPayload {
-    int code;
-}; // Generic code to qualify a state change
-struct CollectedPayload {
-    int value;
-}; // Value carried by collected items
+    /**
+     * @brief Payload for movement or resize events.
+     */
+    struct MovedPayload {
+        Vec2 pos;
+        Vec2 size;
+    };
 
-using EventPayload = std::variant<std::monostate, MovedPayload, StateChangedPayload,
-                                  CollectedPayload>; // Payload for events
+    /**
+     * @brief Payload describing a generic state change.
+     */
+    struct StateChangedPayload {
+        int code{};
+    };
 
-struct Event {              // Event passed to observers
-    EventType type{};       // Event category
-    EventPayload payload{}; // Optional data for the event
-};
+    /**
+     * @brief Payload for collection events carrying a score value.
+     */
+    struct CollectedPayload {
+        int value{};
+    };
+
+    /**
+     * @brief Variant holding optional payload data for an event.
+     */
+    using EventPayload =
+            std::variant<std::monostate, MovedPayload, StateChangedPayload, CollectedPayload>;
+
+    /**
+     * @brief Event dispatched by logic subjects to observers.
+     */
+    struct Event {
+        EventType type{};
+        EventPayload payload{};
+    };
+
 } // namespace pacman::logic

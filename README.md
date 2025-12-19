@@ -52,7 +52,6 @@
 * [ ] Schrijf **exceptions** voor missende assets/config; vang in app en toon foutmelding in MenuState. 
 * [x] Integreer **frame cap** (optioneel) in app loop (bijv. 60 FPS), maar logic draait met Stopwatch deltaTime (geen busy waiting).
 * [x] Werk **turning** uit: Pac-Man accepteert bufferd richting bij naderen van kruising; als viable, wissel richting soepel.
-* [ ] Implementeer **ghost house** logica (center spawn) en release-poort; eaten ghosts keren als ogen terug naar center en hergroenen naar chasing. 
 * [x] Breid **HUD** uit met timers: fear-resttijd, level, score multiplier (op basis van coin-combo). 
 * [x] Maak **score-multipliers** coherent met eisen: hoe korter tussen twee coins, hoe groter de bonus; reset na pauze of bij schade.
 * [x] Zet **Victory flow**: bij level clear → VictoryState met bonuspunten en “Next Level”.
@@ -64,24 +63,19 @@
 * [x] Maak **level loader** (tekst/bitmap) die walls/coins/fruits in World vult; zo kun je snel layout wijzigen.
 * [ ] Automatiseer **build**: CMake targets `logic`, `app`, `tests`; install rules voor assets; compileer met C++20.
 * [ ] Configureer **CI** (bijv. CircleCI) om op Ubuntu 24.04.3 met SFML 2.6.1, CMake 3.28.3, g++13/clang18 te bouwen; toon badge in README.
-* [ ] Controleer **smart pointer ownership** (unique voor exclusief, shared waar nodig, weak om cycles te breken). Geen raw pointers behalve waar patroon vereist (documenteer). 
-* [ ] Vermijd **code duplicatie**: factoriseer via polymorfisme/templating (bijv. observers/visitors). 
+* [ ] Controleer **smart pointer ownership** (unique voor exclusief, shared waar nodig, weak om cycles te breken). Geen raw pointers behalve waar patroon vereist (documenteer).
 * [ ] Voeg **documentation** toe: korte ontwerp-overzicht (2 A4), designkeuzes, patronen, extensies, link naar gameplay-video (10 min) en repo. 
 * [ ] Maak **report** secties: architectuur, patronen (MVC/Observer/Factory/Singleton/State), quality, AI, scaling, risico’s, future work. 
 * [x] Leg **inputs** vast: pijlen = richting, Enter = start, Esc = pauze; UI tooltips in Menu/HUD.
 * [x] Beperk **dependencies** in logic: alleen STL/chrono/random; geen SFML headers in logic.
 * [x] Tune **speeds**: Pac-Man iets sneller dan ghosts in fear; in hogere levels ghostSpeed omhoog, fear korter.
-* [ ] Optimaliseer **render volgorde**: walls → coins → fruits → ghosts → pacman → HUD; reduceer state changes (textures).
-* [ ] Verwerk **errors** gracieus: ontbrekende sprite → placeholder; highscore bestand niet schrijfbaar → waarschuwing. 
 * [x] Finaliseer **MenuState** visuals: titel, top-5, Play knop centraal; muis/keyboard focus. 
 * [x] Finaliseer **LevelState** loop: input → World actions; World update(dt) → events → Views/HUD tekenen; check transitions.
 * [x] Finaliseer **PausedState**: stack-pop om terug te keren; geen World hercreatie. 
 * [x] Finaliseer **Victory/GameOver** schermen met knoppen (Menu/Next). State maakt nieuwe World voor volgend level. 
 * [ ] Check **compilatie** op referentieplatform; assets meegeleverd; run scriptje `./run.sh`. 
-* [ ] Speel **volledige playthrough**: start → level1 clear → level2 sneller/korter fear → verlies leven → respawns → game over → menu.
-* [ ] Kalibreer **score**: basis-decrement tempo, coin base value, chain-multipliers, level-clear bonus, ghost/fruit bonus; leg vast in config. 
-* [ ] Bevestig **sprites**: gebruik set uit figuur (genoeg frames), fear = blauw, ogen tonen richting; niet alle figuren nodig.
-* [ ] Zorg dat **scoreboard** zichtbaar is bij game start; update na game over; persist naar file.
+* [x] Speel **volledige playthrough**: start → level1 clear → level2 sneller/korter fear → verlies leven → respawns → game over → menu.
+* [x] Zorg dat **scoreboard** zichtbaar is bij game start; update na game over; persist naar file.
 * [ ] Schrijf **README** met build-instructies, controls, features, patronen en CI badge + student-id. 
 * [ ] Neem **video** op: 3 min gameplay + 7 min design/implementatie; link in rapport.
 * [ ] Doe **valgrind/asan** run; check leaks en UB; fix virtuele destructors en initialisatie. 

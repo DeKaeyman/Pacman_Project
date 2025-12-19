@@ -1,89 +1,116 @@
-// app/views/FruitView.cpp
 #include "FruitView.h"
+
 #include "../logic/observer/Event.h"
+
 #include <SFML/Graphics/RenderWindow.hpp>
+
 #include <cmath>
 
 namespace pacman::app {
 
-sf::Texture FruitView::texture_{};     // Shared static texture
-bool FruitView::textureLoaded_{false}; // Prevents repeated loading
+    sf::Texture FruitView::texture_{};
+    bool FruitView::textureLoaded_{false};
 
-namespace {                                                            // Fruit sprite selection in sprite sheet
-constexpr const char* SPRITE_SHEET_PATH = "assets/sprites/sprite.png"; // Asset location
+    namespace {
+        constexpr const char* kSpriteSheetPath = "assets/sprites/sprite.png";
 
-constexpr unsigned int SHEET_COLS = 19;
-constexpr unsigned int SHEET_ROWS = 19;
+        constexpr unsigned int kSheetCols = 19;
+        constexpr unsigned int kSheetRows = 19;
 
-// Fruit grid position (0-based col,row)
-constexpr unsigned int FRUIT_COL = 11;
-constexpr unsigned int FRUIT_ROW = 11;
+        constexpr unsigned int kFruitCol = 11;
+        constexpr unsigned int kFruitRow = 11;
 
-sf::IntRect spriteRectFromGrid(const sf::Texture& tex, unsigned int col, unsigned int row) {
-    const auto size = tex.getSize();                                                 // Full sheet size in pixels
-    const float cellW = static_cast<float>(size.x) / static_cast<float>(SHEET_COLS); // Width of one grid cell
-    const float cellH = static_cast<float>(size.y) / static_cast<float>(SHEET_ROWS); // Height of one grid cell
+        /**
+         * @brief Computes an SFML texture rectangle from a grid-based sprite sheet.
+         * @param texture The sprite sheet texture.
+         * @param col Zero-based column index in the sheet grid.
+         * @param row Zero-based row index in the sheet grid.
+         * @return The corresponding sub-rectangle in pixel coordinates.
+         */
+        sf::IntRect spriteRectFromGrid(const sf::Texture& texture, unsigned int col, unsigned int row) {
+            const auto size = texture.getSize();
+            const float cellW = static_cast<float>(size.x) / static_cast<float>(kSheetCols);
+            const float cellH = static_cast<float>(size.y) / static_cast<float>(kSheetRows);
 
-    const int left = static_cast<int>(std::round(col * cellW));
-    const int top = static_cast<int>(std::round(row * cellH));
-    const int right = static_cast<int>(std::round((col + 1u) * cellW));
-    const int bottom = static_cast<int>(std::round((row + 1u) * cellH));
+            const int left = static_cast<int>(std::round(static_cast<float>(col) * cellW));
+            const int top = static_cast<int>(std::round(static_cast<float>(row) * cellH));
+            const int right = static_cast<int>(std::round(static_cast<float>(col + 1u) * cellW));
+            const int bottom = static_cast<int>(std::round(static_cast<float>(row + 1u) * cellH));
 
-    return {left, top, right - left, bottom - top}; // Sprite rectangle
-}
-} // namespace
+            return {left, top, right - left, bottom - top};
+        }
+    } // namespace
 
-void FruitView::ensureTextureLoaded() {
-    if (textureLoaded_)
-        return; // Load only once
-    if (!texture_.loadFromFile(SPRITE_SHEET_PATH))
-        return;            // Load file, abort if failure
-    textureLoaded_ = true; // Mark loaded
-}
+    /**
+     * @brief Ensures the shared fruit sprite texture is loaded once.
+     *
+     * If loading fails, the view will simply not render (matching current behavior).
+     */
+    void FruitView::ensureTextureLoaded() {
+        if (textureLoaded_) {
+            return;
+        }
 
-FruitView::FruitView(const std::shared_ptr<pacman::logic::Fruit>& model) : model_(model) {
-    ensureTextureLoaded();                                                          // Make sure texture exists
-    if (textureLoaded_) {                                                           // Configure sprite only if OK
-        sprite_.setTexture(texture_);                                               // Use shared texture
-        sprite_.setTextureRect(spriteRectFromGrid(texture_, FRUIT_COL, FRUIT_ROW)); // Select fruit region
+        if (!texture_.loadFromFile(kSpriteSheetPath)) {
+            return;
+        }
+
+        textureLoaded_ = true;
     }
-}
 
-void FruitView::onEvent(const pacman::logic::Event& e) {
-    if (e.type == pacman::logic::EventType::Collected) { // Fruit eaten
-        visible_ = false;                                // Hide fruit permanently
+    /**
+     * @brief Constructs a FruitView bound to a fruit model and prepares its sprite.
+     * @param model Shared pointer to the fruit logic entity.
+     */
+    FruitView::FruitView(const std::shared_ptr<pacman::logic::Fruit>& model)
+            : model_(model) {
+        ensureTextureLoaded();
+
+        if (textureLoaded_) {
+            sprite_.setTexture(texture_);
+            sprite_.setTextureRect(spriteRectFromGrid(texture_, kFruitCol, kFruitRow));
+        }
     }
-}
 
-void FruitView::draw(sf::RenderWindow& window) {
-    if (!visible_)
-        return; // Hidden after collection
-    if (!model_)
-        return; // No model -> can't draw
-    if (!model_->active)
-        return; // Inactive fruit -> skip
-    if (!camera_)
-        return; // Need camera for world -> pixel transform
-    if (!textureLoaded_)
-        return; // No texture loaded -> skip draw
+    /**
+     * @brief Handles logic events emitted by the fruit.
+     * @param event Incoming logic event.
+     */
+    void FruitView::onEvent(const pacman::logic::Event& event) {
+        if (event.type == pacman::logic::EventType::Collected) {
+            visible_ = false;
+        }
+    }
 
-    pacman::logic::Rect r = model_->bounds();  // Get logic bounding box
-    auto pixelRect = camera_->worldToPixel(r); // Convert to pixel-space rectangle
+    /**
+     * @brief Draws the fruit sprite centered inside its tile.
+     *
+     * Rendering is skipped if the fruit is not visible, inactive, missing a model/camera,
+     * or if the sprite sheet texture failed to load.
+     *
+     * @param window The render window to draw to.
+     */
+    void FruitView::draw(sf::RenderWindow& window) {
+        if (!visible_ || !model_ || !model_->active || !camera_ || !textureLoaded_) {
+            return;
+        }
 
-    const auto& texRect = sprite_.getTextureRect(); // Current sprite size in texture
+        const pacman::logic::Rect worldRect = model_->bounds();
+        const auto pixelRect = camera_->worldToPixel(worldRect);
 
-    float scale =
-        static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width); // Uniform scale so coin fits tile
+        const auto texRect = sprite_.getTextureRect();
+        const float scale = static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width);
 
-    float finalW = texRect.width * scale;  // Pixel width after scaling
-    float finalH = texRect.height * scale; // Pixel height after scaling
+        const float finalW = static_cast<float>(texRect.width) * scale;
+        const float finalH = static_cast<float>(texRect.height) * scale;
 
-    float posX = static_cast<float>(pixelRect.x) + (pixelRect.w - finalW) * 0.5f; // Center horizontally
-    float posY = static_cast<float>(pixelRect.y) + (pixelRect.h - finalH) * 0.5f; // Center vertically
+        const float posX = static_cast<float>(pixelRect.x) + (static_cast<float>(pixelRect.w) - finalW) * 0.5f;
+        const float posY = static_cast<float>(pixelRect.y) + (static_cast<float>(pixelRect.h) - finalH) * 0.5f;
 
-    sprite_.setPosition(posX, posY); // Put sprite on screen
-    sprite_.setScale(scale, scale);  // Apply scaling
+        sprite_.setPosition(posX, posY);
+        sprite_.setScale(scale, scale);
 
-    window.draw(sprite_); // Draw final coin sprite
-}
-}; // namespace pacman::app
+        window.draw(sprite_);
+    }
+
+} // namespace pacman::app

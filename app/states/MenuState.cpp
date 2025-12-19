@@ -1,131 +1,164 @@
-// MenuState.cpp
 #include "MenuState.h"
+
+#include "score/Score.h"
+
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
 
-#include "score/Score.h"
 #include <iomanip>
 #include <sstream>
+#include <utility>
 
 namespace pacman::app {
 
-namespace {
-constexpr float BUTTON_WIDTH = 200.0f; // Fixed width for the Play button
-constexpr float BUTTON_HEIGHT = 60.0f; // Fixed height for the Play button
-} // namespace
+    namespace {
+        constexpr float kButtonWidth = 200.0f;
+        constexpr float kButtonHeight = 60.0f;
 
-MenuState::MenuState(pacman::app::StateManager& m) : State(m) { // Constructor, forwards StateManager to base class
-    font_.loadFromFile("assets/fonts/Crackman.otf");            // Load a font for displaying text
-    highscores_ = pacman::logic::Score::loadHighscores(highscorePath_); // Load top 5 highscores from logic layer
-}
+        /**
+         * @brief Computes the axis-aligned bounds of the "Play" button in window coordinates.
+         * @param windowWidth Current window width in pixels.
+         * @param windowHeight Current window height in pixels.
+         * @return A FloatRect representing the clickable bounds.
+         */
+        sf::FloatRect computePlayButtonBounds(unsigned windowWidth, unsigned windowHeight) {
+            const float centerX = static_cast<float>(windowWidth) * 0.5f;
+            const float centerY = static_cast<float>(windowHeight) * 0.75f;
 
-void MenuState::handleEvent(const sf::Event& e) {
-    if (e.type == sf::Event::KeyPressed) { // When enter is pressed -> Go to level state
-        push("level");                     // push new level state on the state stack
-        return;
+            const float left = centerX - kButtonWidth * 0.5f;
+            const float top = centerY - kButtonHeight * 0.5f;
+
+            return sf::FloatRect(left, top, kButtonWidth, kButtonHeight);
+        }
+
+        /**
+         * @brief Updates cached window dimensions based on the render window.
+         * @param window Render window to read size from.
+         * @param outWidth Output width in pixels.
+         * @param outHeight Output height in pixels.
+         */
+        void updateWindowSize(const sf::RenderWindow& window, unsigned& outWidth, unsigned& outHeight) {
+            const auto size = window.getSize();
+            outWidth = size.x;
+            outHeight = size.y;
+        }
+
+        /**
+         * @brief Builds five formatted highscore lines with zero-padding.
+         * @param highscores Highscore values loaded from storage.
+         * @return Vector containing exactly five formatted lines.
+         */
+        std::vector<std::string> buildHighscoreLines(const std::vector<int>& highscores) {
+            std::vector<std::string> lines;
+            lines.reserve(5);
+
+            for (int i = 0; i < 5; ++i) {
+                const int value = (i < static_cast<int>(highscores.size())) ? highscores[i] : 0;
+
+                std::ostringstream oss;
+                oss << (i + 1) << ". " << std::setw(5) << std::setfill('0') << value;
+
+                lines.push_back(oss.str());
+            }
+
+            return lines;
+        }
+
+        /**
+         * @brief Configures text origin so it is centered based on its local bounds.
+         * @param text Text object to center.
+         */
+        void centerTextOrigin(sf::Text& text) {
+            const auto bounds = text.getLocalBounds();
+            text.setOrigin(bounds.left + bounds.width * 0.5f, bounds.top + bounds.height * 0.5f);
+        }
+    } // namespace
+
+    /**
+     * @brief Constructs the menu state, loads resources, and reads highscores.
+     * @param manager Reference to the central StateManager.
+     */
+    MenuState::MenuState(StateManager& manager) : State(manager) {
+        font_.loadFromFile("assets/fonts/Crackman.otf");
+        highscores_ = pacman::logic::Score::loadHighscores(highscorePath_);
     }
 
-    if (e.type == sf::Event::MouseButtonPressed &&
-        e.mouseButton.button == sf::Mouse::Left) { // When left mouse button is pressed -> check if
-                                                   // clicked on Play button
+    /**
+     * @brief Handles keyboard and mouse interactions for starting the game.
+     * @param event The SFML event to process.
+     */
+    void MenuState::handleEvent(const sf::Event& event) {
+        if (event.type == sf::Event::KeyPressed) {
+            push("level");
+            return;
+        }
 
-        // Compute center of the window
-        float centerX = static_cast<float>(windowWidth_) * 0.5f;
-        float centerY = static_cast<float>(windowHeight_) * 0.75f;
+        if (event.type != sf::Event::MouseButtonPressed || event.mouseButton.button != sf::Mouse::Left) {
+            return;
+        }
 
-        // Compute the rectangle bounds of the Play button
-        float left = centerX - BUTTON_WIDTH * 0.5f;
-        float top = centerY - BUTTON_HEIGHT * 0.5f;
-        float right = left + BUTTON_WIDTH;
-        float bottom = top + BUTTON_HEIGHT;
+        const auto bounds = computePlayButtonBounds(windowWidth_, windowHeight_);
+        const float mx = static_cast<float>(event.mouseButton.x);
+        const float my = static_cast<float>(event.mouseButton.y);
 
-        // Get mouse coordinates
-        float mx = static_cast<float>(e.mouseButton.x);
-        float my = static_cast<float>(e.mouseButton.y);
-
-        // If mouse coordinates lies inside the button bounds -> start the level
-        if (mx >= left && mx <= right && my >= top && my <= bottom) {
-            push("level"); // Push the level state on the state stack
+        if (bounds.contains(mx, my)) {
+            push("level");
         }
     }
-}
 
-void MenuState::draw(sf::RenderWindow& w) {
-    // Get current window size for positioning UI elements
-    auto size = w.getSize();
-    windowWidth_ = size.x;
-    windowHeight_ = size.y;
+    /**
+     * @brief Draws the menu: title, highscores, and the play button.
+     * @param window The render window to draw to.
+     */
+    void MenuState::draw(sf::RenderWindow& window) {
+        updateWindowSize(window, windowWidth_, windowHeight_);
 
-    // Title text
-    sf::Text title;                        // Text object for game title
-    title.setFont(font_);                  // Assing loaded font
-    title.setString("Pac-Man");            // Displayed string
-    title.setCharacterSize(64);            // Big title size
-    title.setFillColor(sf::Color::Yellow); // Pac-Mac color
+        sf::Text title;
+        title.setFont(font_);
+        title.setString("Pac-Man");
+        title.setCharacterSize(64);
+        title.setFillColor(sf::Color::Yellow);
+        centerTextOrigin(title);
+        title.setPosition(static_cast<float>(windowWidth_) * 0.5f, static_cast<float>(windowHeight_) * 0.25f);
+        window.draw(title);
 
-    // Center title horizontally and vertically at 25% height
-    auto titleBounds = title.getLocalBounds();
-    title.setOrigin(titleBounds.left + titleBounds.width * 0.5f, titleBounds.top + titleBounds.height * 0.5f);
-    title.setPosition(windowWidth_ * 0.5f, windowHeight_ * 0.25f);
+        sf::Text scoreText;
+        scoreText.setFont(font_);
+        scoreText.setCharacterSize(24);
+        scoreText.setFillColor(sf::Color::White);
 
-    w.draw(title); // Draw the title on the screen
+        const auto lines = buildHighscoreLines(highscores_);
+        const float startY = static_cast<float>(windowHeight_) * 0.35f;
+        const float stepY = 30.0f;
 
-    sf::Text scoreText;
-    scoreText.setFont(font_);
-    scoreText.setCharacterSize(24);
-    scoreText.setFillColor(sf::Color::White);
+        for (int i = 0; i < 5; ++i) {
+            scoreText.setString(lines[i]);
+            centerTextOrigin(scoreText);
+            scoreText.setPosition(static_cast<float>(windowWidth_) * 0.5f, startY + static_cast<float>(i) * stepY);
+            window.draw(scoreText);
+        }
 
-    std::vector<std::string> lines; // Hold formated style strings
-    lines.reserve(5);               // Reserve space for 5 entries
+        const float centerX = static_cast<float>(windowWidth_) * 0.5f;
+        const float centerY = static_cast<float>(windowHeight_) * 0.75f;
 
-    for (int i = 0; i < 5; i++) {                                                    // Build five score lines
-        int value = (i < static_cast<int>(highscores_.size())) ? highscores_[i] : 0; // Use real score if available
+        sf::RectangleShape button({kButtonWidth, kButtonHeight});
+        button.setOrigin(kButtonWidth * 0.5f, kButtonHeight * 0.5f);
+        button.setPosition(centerX, centerY);
+        button.setFillColor(sf::Color(50, 50, 150));
+        button.setOutlineColor(sf::Color::White);
+        button.setOutlineThickness(2.0f);
+        window.draw(button);
 
-        std::ostringstream oss;
-        oss << (i + 1) << ". " << std::setw(5) << std::setfill('0') << value; // Stream for zero padded formatting
-
-        lines.push_back(oss.str()); // Store formatted line
+        sf::Text playText;
+        playText.setFont(font_);
+        playText.setString("Play");
+        playText.setCharacterSize(28);
+        playText.setFillColor(sf::Color::White);
+        centerTextOrigin(playText);
+        playText.setPosition(centerX, centerY);
+        window.draw(playText);
     }
 
-    float startY = windowHeight_ * 0.35f; // Start position for first score line
-    float stepY = 30.0f;                  // Spacing between lines
-
-    // Draw all 5 placeholder scores centered horizontally
-    for (int i = 0; i < 5; ++i) {
-        scoreText.setString(lines[i]); // Set line text
-        auto b = scoreText.getLocalBounds();
-        scoreText.setOrigin(b.left + b.width * 0.5f,
-                            b.top + b.height * 0.5f); // Center text
-        scoreText.setPosition(windowWidth_ * 0.5f,
-                              startY + i * stepY); // Vertical placement
-        w.draw(scoreText);
-    }
-
-    float centerX = static_cast<float>(windowWidth_) * 0.5f;   // Center x
-    float centerY = static_cast<float>(windowHeight_) * 0.75f; // 75% down the screen
-
-    sf::RectangleShape button({BUTTON_WIDTH, BUTTON_HEIGHT});    // Create button shape with fixed size
-    button.setOrigin(BUTTON_WIDTH * 0.5f, BUTTON_HEIGHT * 0.5f); // Center origin
-    button.setPosition(centerX, centerY);                        // Place in center
-    button.setFillColor(sf::Color(50, 50, 150));                 // Dark blue fill
-    button.setOutlineColor(sf::Color::White);                    // White border
-    button.setOutlineThickness(2.0f);                            // Slight border thickness
-
-    w.draw(button); // Draw button rectangle
-
-    sf::Text playText;
-    playText.setFont(font_);
-    playText.setString("Play");
-    playText.setCharacterSize(28);
-    playText.setFillColor(sf::Color::White);
-
-    // Center the label inside the button
-    auto pb = playText.getLocalBounds();
-    playText.setOrigin(pb.left + pb.width * 0.5f, pb.top + pb.height * 0.5f);
-    playText.setPosition(centerX, centerY); // Center label on button
-
-    w.draw(playText); // Draw text label
-}
 } // namespace pacman::app

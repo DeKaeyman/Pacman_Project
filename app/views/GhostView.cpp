@@ -1,129 +1,174 @@
-// app/views/GhostView.cpp
 #include "GhostView.h"
+
 #include <SFML/Graphics/RenderWindow.hpp>
+
 #include <cmath>
 
 namespace pacman::app {
 
-sf::Texture GhostView::texture_{};     // Static sprite sheet texture shared by all ghosts
-bool GhostView::textureLoaded_{false}; // Ensures texture loads only once
+    sf::Texture GhostView::texture_{};
+    bool GhostView::textureLoaded_{false};
 
-namespace {
-constexpr const char* SPRITE_SHEET_PATH = "assets/sprites/sprite.png";
+    namespace {
+        constexpr const char* kSpriteSheetPath = "assets/sprites/sprite.png";
 
-constexpr unsigned int SHEET_COLS = 19;
-constexpr unsigned int SHEET_ROWS = 19;
+        constexpr unsigned int kSheetCols = 19;
+        constexpr unsigned int kSheetRows = 19;
 
-// Each ghost type has its own sprite column
-unsigned int columnForKind(pacman::logic::GhostKind kind) {
-    using pacman::logic::GhostKind;
-    switch (kind) {
-    case GhostKind::A:
-        return 13;
-    case GhostKind::B:
-        return 14;
-    case GhostKind::C:
-        return 15;
-    case GhostKind::D:
-        return 16;
+        /**
+         * @brief Returns the sprite sheet column for a given ghost kind.
+         * @param kind The ghost kind.
+         * @return Sprite sheet column index for that kind.
+         */
+        unsigned int columnForKind(pacman::logic::GhostKind kind) {
+            using pacman::logic::GhostKind;
+
+            switch (kind) {
+                case GhostKind::A:
+                    return 13;
+                case GhostKind::B:
+                    return 14;
+                case GhostKind::C:
+                    return 15;
+                case GhostKind::D:
+                    return 16;
+            }
+
+            return 13;
+        }
+
+        constexpr unsigned int kRowRight1 = 0;
+        constexpr unsigned int kRowRight2 = 1;
+        constexpr unsigned int kRowDown1 = 2;
+        constexpr unsigned int kRowDown2 = 3;
+        constexpr unsigned int kRowLeft1 = 4;
+        constexpr unsigned int kRowLeft2 = 5;
+        constexpr unsigned int kRowUp1 = 6;
+        constexpr unsigned int kRowUp2 = 7;
+
+        constexpr unsigned int kFearCol1 = 0;
+        constexpr unsigned int kFearCol2 = 1;
+        constexpr unsigned int kFearRow1 = 11;
+        constexpr unsigned int kFearRow2 = 12;
+
+        /**
+         * @brief Computes an SFML texture rectangle from a grid-based sprite sheet.
+         * @param texture The sprite sheet texture.
+         * @param col Zero-based column index in the sheet grid.
+         * @param row Zero-based row index in the sheet grid.
+         * @return The corresponding sub-rectangle in pixel coordinates.
+         */
+        sf::IntRect spriteRectFromGrid(const sf::Texture& texture, unsigned int col, unsigned int row) {
+            const auto size = texture.getSize();
+            const float cellW = static_cast<float>(size.x) / static_cast<float>(kSheetCols);
+            const float cellH = static_cast<float>(size.y) / static_cast<float>(kSheetRows);
+
+            const int left = static_cast<int>(std::round(static_cast<float>(col) * cellW));
+            const int top = static_cast<int>(std::round(static_cast<float>(row) * cellH));
+            const int right = static_cast<int>(std::round(static_cast<float>(col + 1u) * cellW));
+            const int bottom = static_cast<int>(std::round(static_cast<float>(row + 1u) * cellH));
+
+            return {left, top, right - left, bottom - top};
+        }
+
+        /**
+         * @brief Selects an animation row based on direction and elapsed time.
+         * @param dir Current ghost direction.
+         * @param t Elapsed time used for animation.
+         * @return Sprite sheet row index.
+         */
+        unsigned int pickRowFor(logic::Direction dir, double t) {
+            const double speed = 8.0;
+            const double phase = std::fmod(t * speed, 2.0);
+            const bool firstFrame = (phase < 1.0);
+
+            switch (dir) {
+                case logic::Direction::Right:
+                    return firstFrame ? kRowRight1 : kRowRight2;
+                case logic::Direction::Down:
+                    return firstFrame ? kRowDown1 : kRowDown2;
+                case logic::Direction::Left:
+                    return firstFrame ? kRowLeft1 : kRowLeft2;
+                case logic::Direction::Up:
+                    return firstFrame ? kRowUp1 : kRowUp2;
+                case logic::Direction::None:
+                default:
+                    return kRowRight1;
+            }
+        }
+
+        /**
+         * @brief Selects the fear-mode sprite column based on elapsed time (flashing effect).
+         * @param t Elapsed time used for animation.
+         * @return Sprite sheet column index.
+         */
+        unsigned int pickFearColumn(double t) {
+            const double flashSpeed = 2.0;
+            const double phase = std::fmod(t * flashSpeed, 2.0);
+            return (phase < 1.0) ? kFearCol1 : kFearCol2;
+        }
+
+        /**
+         * @brief Selects the fear-mode sprite row based on elapsed time (mouth animation).
+         * @param t Elapsed time used for animation.
+         * @return Sprite sheet row index.
+         */
+        unsigned int pickFearRow(double t) {
+            const double animSpeed = 8.0;
+            const double phase = std::fmod(t * animSpeed, 2.0);
+            return (phase < 1.0) ? kFearRow1 : kFearRow2;
+        }
+    } // namespace
+
+    /**
+     * @brief Loads the shared sprite sheet texture on first use.
+     *
+     * If loading fails, rendering will be skipped (matching current behavior).
+     */
+    void GhostView::ensureTextureLoaded() {
+        if (textureLoaded_) {
+            return;
+        }
+
+        if (!texture_.loadFromFile(kSpriteSheetPath)) {
+            return;
+        }
+
+        textureLoaded_ = true;
     }
-    return 13;
-}
 
-// Animation rows for each movement direction
-constexpr unsigned int ROW_RIGHT_1 = 0;
-constexpr unsigned int ROW_RIGHT_2 = 1;
-constexpr unsigned int ROW_DOWN_1 = 2;
-constexpr unsigned int ROW_DOWN_2 = 3;
-constexpr unsigned int ROW_LEFT_1 = 4;
-constexpr unsigned int ROW_LEFT_2 = 5;
-constexpr unsigned int ROW_UP_1 = 6;
-constexpr unsigned int ROW_UP_2 = 7;
+    /**
+     * @brief Constructs a GhostView bound to the given ghost model and prepares its sprite.
+     * @param model Shared pointer to the ghost logic entity.
+     */
+    GhostView::GhostView(const std::shared_ptr<pacman::logic::Ghost>& model)
+            : model_(model) {
+        ensureTextureLoaded();
 
-// Fear mode sprites
-constexpr unsigned int FEAR_COL_1 = 0;
-constexpr unsigned int FEAR_COL_2 = 1;
-constexpr unsigned int FEAR_ROW_1 = 11;
-constexpr unsigned int FEAR_ROW_2 = 12;
-
-// Convert a (col,row) index to an SFML IntRect representing that frame
-sf::IntRect spriteRectFromGrid(const sf::Texture& tex, unsigned int col, unsigned int row) {
-    const auto size = tex.getSize();
-    const float cellW = static_cast<float>(size.x) / static_cast<float>(SHEET_COLS);
-    const float cellH = static_cast<float>(size.y) / static_cast<float>(SHEET_ROWS);
-
-    const int left = static_cast<int>(std::round(col * cellW));
-    const int top = static_cast<int>(std::round(row * cellH));
-    const int right = static_cast<int>(std::round((col + 1u) * cellW));
-    const int bottom = static_cast<int>(std::round((row + 1u) * cellH));
-
-    return {left, top, right - left, bottom - top};
-}
-
-// Select body animation row based on direction + elapsed animation time
-unsigned int pickRowFor(logic::Direction dir, double t) {
-    const double speed = 8.0;
-    const double phase = std::fmod(t * speed, 2.0); // Cycles between two frames [0,2)
-
-    const bool firstFrame = (phase < 1.0); // Decide which frame of the pair to use
-
-    switch (dir) {
-    case logic::Direction::Right:
-        return firstFrame ? ROW_RIGHT_1 : ROW_RIGHT_2;
-    case logic::Direction::Down:
-        return firstFrame ? ROW_DOWN_1 : ROW_DOWN_2;
-    case logic::Direction::Left:
-        return firstFrame ? ROW_LEFT_1 : ROW_LEFT_2;
-    case logic::Direction::Up:
-        return firstFrame ? ROW_UP_1 : ROW_UP_2;
-    case logic::Direction::None:
-    default:
-        return ROW_RIGHT_1; // Idle default frame
+        if (textureLoaded_) {
+            sprite_.setTexture(texture_);
+            updateSpriteFrame();
+        }
     }
-}
 
-// Fear mode color alternates between two columns to simulate flashing
-unsigned int pickFearColumn(double t) {
-    const double flashSpeed = 2.0;
-    const double phase = std::fmod(t * flashSpeed, 2.0); // [0,2)
-    return (phase < 1.0) ? FEAR_COL_1 : FEAR_COL_2;
-}
+    /**
+     * @brief Reacts to ghost state-change events (direction changes and fear mode toggles).
+     * @param event Incoming logic event.
+     */
+    void GhostView::onEvent(const pacman::logic::Event& event) {
+        using pacman::logic::EventType;
+        using pacman::logic::StateChangedPayload;
 
-// Fear mode mouth animation rows
-unsigned int pickFearRow(double t) {
-    const double animSpeed = 8.0;
-    const double phase = std::fmod(t * animSpeed, 2.0); // [0,2)
-    return (phase < 1.0) ? FEAR_ROW_1 : FEAR_ROW_2;
-}
-} // namespace
+        if (event.type != EventType::StateChanged) {
+            return;
+        }
 
-void GhostView::ensureTextureLoaded() {
-    if (textureLoaded_)
-        return; // Already loaded
-    if (!texture_.loadFromFile(SPRITE_SHEET_PATH))
-        return;            // Fail silently if missing
-    textureLoaded_ = true; // mark texture as accessible
-}
+        const auto* payload = std::get_if<StateChangedPayload>(&event.payload);
+        if (!payload) {
+            return;
+        }
 
-GhostView::GhostView(const std::shared_ptr<pacman::logic::Ghost>& model) : model_(model) {
-    ensureTextureLoaded();
-
-    if (textureLoaded_) {
-        sprite_.setTexture(texture_); // Assign sprite sheet
-        updateSpriteFrame();          // Set initial frame
-    }
-}
-
-void GhostView::onEvent(const pacman::logic::Event& e) {
-    using pacman::logic::EventType;
-    using pacman::logic::StateChangedPayload;
-
-    if (e.type == EventType::StateChanged) { // Only listen for direction/fear changes
-        if (const auto* payload = std::get_if<StateChangedPayload>(&e.payload)) {
-            switch (payload->code) { // Model encodes direction or fear trigger as
-                                     // integer codes
-
-            // Movement direction changes
+        switch (payload->code) {
             case 0:
                 direction_ = logic::Direction::Right;
                 break;
@@ -136,78 +181,70 @@ void GhostView::onEvent(const pacman::logic::Event& e) {
             case 3:
                 direction_ = logic::Direction::Down;
                 break;
-
-            // Enter/exit fear mode
             case 100:
                 fearMode_ = true;
                 break;
             case 101:
                 fearMode_ = false;
                 break;
-
             default:
                 break;
-            }
         }
     }
-}
 
-void GhostView::updateSpriteFrame() {
-    if (!textureLoaded_)
-        return; // No sprite sheet loaded
-    if (!model_)
-        return; // Safety check
+    /**
+     * @brief Updates the sprite frame selection based on direction, fear mode, and elapsed time.
+     */
+    void GhostView::updateSpriteFrame() {
+        if (!textureLoaded_ || !model_) {
+            return;
+        }
 
-    auto& sw = pacman::logic::Stopwatch::getInstance(); // Global stopwatch for
-                                                        // animation time
-    const double t = sw.elapsed();                      // Time since game start
+        auto& sw = pacman::logic::Stopwatch::getInstance();
+        const double t = sw.elapsed();
 
-    unsigned int col = 0; // Sprite grid column
-    unsigned int row = 0; // Sprite grid row
+        unsigned int col = 0;
+        unsigned int row = 0;
 
-    if (fearMode_) { // Use fear mode animation
-        col = pickFearColumn(t);
-        row = pickFearRow(t);
-    } else {
-        row = pickRowFor(direction_, t);     // Pick animation by direction
-        col = columnForKind(model_->kind()); // Pick ghost color by type
+        if (fearMode_) {
+            col = pickFearColumn(t);
+            row = pickFearRow(t);
+        } else {
+            row = pickRowFor(direction_, t);
+            col = columnForKind(model_->kind());
+        }
+
+        sprite_.setTextureRect(spriteRectFromGrid(texture_, col, row));
+        sprite_.setColor(sf::Color::White);
     }
 
-    const auto rect = spriteRectFromGrid(texture_, col, row); // Get final sprite frame
-    sprite_.setTextureRect(rect);                             // Apply sprite rectangle
+    /**
+     * @brief Draws the ghost sprite centered inside its tile.
+     * @param window The render window to draw to.
+     */
+    void GhostView::draw(sf::RenderWindow& window) {
+        if (!model_ || !model_->active || !camera_ || !textureLoaded_) {
+            return;
+        }
 
-    sprite_.setColor(sf::Color::White); // Ensure no tint is applied
-}
+        updateSpriteFrame();
 
-void GhostView::draw(sf::RenderWindow& window) {
-    if (!model_)
-        return; // No model available
-    if (!model_->active)
-        return; // Don't draw inactive ghost
-    if (!camera_)
-        return; // Need camera for projection
-    if (!textureLoaded_)
-        return; // Texture missing
+        const pacman::logic::Rect worldRect = model_->bounds();
+        const auto pixelRect = camera_->worldToPixel(worldRect);
 
-    updateSpriteFrame(); // Calculate latest animation frame
+        const auto texRect = sprite_.getTextureRect();
+        const float scale = static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width);
 
-    pacman::logic::Rect r = model_->bounds();  // world space bounding box
-    auto pixelRect = camera_->worldToPixel(r); // Convert to pixel space
+        const float finalW = static_cast<float>(texRect.width) * scale;
+        const float finalH = static_cast<float>(texRect.height) * scale;
 
-    const auto& texRect = sprite_.getTextureRect(); // Size of sprite frame
+        const float posX = static_cast<float>(pixelRect.x) + (static_cast<float>(pixelRect.w) - finalW) * 0.5f;
+        const float posY = static_cast<float>(pixelRect.y) + (static_cast<float>(pixelRect.h) - finalH) * 0.5f;
 
-    float scale =
-        static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width); // Uniform scale to fit tile width
+        sprite_.setPosition(posX, posY);
+        sprite_.setScale(scale, scale);
 
-    float finalW = texRect.width * scale;  // Actual drawn width
-    float finalH = texRect.height * scale; // Actual drawn height
+        window.draw(sprite_);
+    }
 
-    float posX = static_cast<float>(pixelRect.x) + (pixelRect.w - finalW) * 0.5f; // Center horizontally
-    float posY = static_cast<float>(pixelRect.y) + (pixelRect.h - finalH) * 0.5f; // Center vertically
-
-    sprite_.setPosition(posX, posY); // Move sprite to screen position
-    sprite_.setScale(scale, scale);  // Apply scale
-
-    window.draw(sprite_); // Render ghost
-}
 } // namespace pacman::app

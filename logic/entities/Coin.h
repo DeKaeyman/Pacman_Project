@@ -1,4 +1,3 @@
-// logic/entities/Coin.h
 #pragma once
 
 #include "Entity.h"
@@ -6,22 +5,62 @@
 
 namespace pacman::logic {
 
-class Coin : public Entity, public Subject {
-public:
-    explicit Coin(const Rect& area,
-                  int value = 10); // Define coin position and score value
+    /**
+     * @brief Collectable coin entity that awards score when picked up.
+     *
+     * A Coin is a non-solid entity that emits a Collected event
+     * when collected. After collection, it becomes inactive.
+     */
+    class Coin : public Entity, public Subject {
+    public:
+        /**
+         * @brief Constructs a coin with a given bounding area and score value.
+         * @param area World-space bounding box of the coin.
+         * @param value Score value awarded upon collection.
+         */
+        explicit Coin(const Rect& area, int value = 10);
 
-    Rect bounds() const override { return area_; } // World space rectangle of coin tile
-    void update(double /*dt*/) override {}         // Coin has no per frame logic
+        /**
+         * @brief Returns the world-space bounding box of the coin.
+         * @return Coin bounding rectangle.
+         */
+        Rect bounds() const override { return area_; }
 
-    int value() const noexcept { return value_; }         // Returns how many points this coin adds
-    void setBounds(const Rect& r) { area_ = r; }          // Move/resize coin if needed
-    bool isCollected() const noexcept { return !active; } // A collected coin becomes inactive
+        /**
+         * @brief Updates the coin entity.
+         *
+         * Coins have no per-frame logic.
+         *
+         * @param dt Unused time step.
+         */
+        void update(double /*dt*/) override {}
 
-    void collect(); // Marks coin collected and sends event
+        /**
+         * @brief Returns the score value of this coin.
+         * @return Score value.
+         */
+        int value() const noexcept { return value_; }
 
-private:
-    Rect area_{};   // World space bounding box of the coin
-    int value_{10}; // Score value of the coin
-};
+        /**
+         * @brief Updates the coin's bounding box.
+         * @param bounds New world-space bounds.
+         */
+        void setBounds(const Rect& bounds) { area_ = bounds; }
+
+        /**
+         * @brief Indicates whether the coin has been collected.
+         * @return True if the coin is already collected.
+         */
+        bool isCollected() const noexcept { return !active; }
+
+        /**
+         * @brief Collects the coin and emits a Collected event.
+         */
+        void collect();
+
+    private:
+        Rect area_{};   ///< World-space bounding box of the coin
+        int value_{10}; ///< Score value awarded on collection
+    };
+
 } // namespace pacman::logic

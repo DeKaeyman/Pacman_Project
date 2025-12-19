@@ -1,152 +1,191 @@
-// logic/score/Score.cpp
 #include "Score.h"
+
 #include "../utils/Stopwatch.h"
 
 #include <algorithm>
 #include <fstream>
+#include <utility>
 
 namespace pacman::logic {
 
-void Score::reset() noexcept {
-    currentScore_ = 0;
-    lastCollectTime_ = 0.0f;
-    hasLastCollectTime_ = false;
-    lastTickTime_ = 0.0;
-    hasLastTickTime_ = false;
-    decayAccumulator_ = 0.0;
-}
+    /**
+     * @brief Resets score state, including combo timing and decay timing.
+     */
+    void Score::reset() noexcept {
+        currentScore_ = 0;
 
-void Score::onEvent(const pacman::logic::Event& e) {
-    switch (e.type) {
-    case EventType::Collected: { // A collectable (coin/fruit) has been picked up
-        if (auto payload = std::get_if<CollectedPayload>(&e.payload)) {
+        lastCollectTime_ = 0.0;
+        hasLastCollectTime_ = false;
 
-            auto& sw = Stopwatch::getInstance(); // Global game timer
-            double now = sw.elapsed();           // Moment of this pickup
+        lastTickTime_ = 0.0;
+        hasLastTickTime_ = false;
 
-            double multiplier = 1.0; // Default value
+        decayAccumulator_ = 0.0;
+    }
 
-            if (hasLastCollectTime_) { // If we previously collected something, give a
-                // bonus
-                double dt = now - lastCollectTime_; // time between pickups
-                if (dt < 0.5)
-                    multiplier = 4.0; // Extreme speed chain
-                else if (dt < 1.0)
-                    multiplier = 3.0; // Very fast chain
-                else if (dt < 2.0)
-                    multiplier = 2.0; // Normal chain
+    /**
+     * @brief Processes logic events to update score (collection, decay ticks, and death penalty).
+     *
+     * - Collected: applies a time-based chain multiplier depending on time between pickups.
+     * - Tick: decays score over time using the global stopwatch.
+     * - Died: applies a score change based on the payload value (as implemented).
+     *
+     * @param event Incoming logic event.
+     */
+    void Score::onEvent(const pacman::logic::Event& event) {
+        switch (event.type) {
+            case EventType::Collected: {
+                const auto* payload = std::get_if<CollectedPayload>(&event.payload);
+                if (!payload) {
+                    break;
+                }
+
+                auto& sw = Stopwatch::getInstance();
+                const double now = sw.elapsed();
+
+                double multiplier = 1.0;
+                if (hasLastCollectTime_) {
+                    const double dt = now - lastCollectTime_;
+                    if (dt < 0.5) {
+                        multiplier = 4.0;
+                    } else if (dt < 1.0) {
+                        multiplier = 3.0;
+                    } else if (dt < 2.0) {
+                        multiplier = 2.0;
+                    }
+                }
+
+                const int base = payload->value;
+                const int bonusScore = static_cast<int>(base * multiplier);
+
+                add(bonusScore);
+
+                lastCollectTime_ = now;
+                hasLastCollectTime_ = true;
+                break;
             }
 
-            int base = payload->value;                            // Score value from model
-            int bonusScore = static_cast<int>(base * multiplier); // Apply chain multiplier
+            case EventType::Tick: {
+                auto& sw = Stopwatch::getInstance();
+                const double now = sw.elapsed();
 
-            add(bonusScore); // Update running score
+                if (!hasLastTickTime_) {
+                    lastTickTime_ = now;
+                    hasLastTickTime_ = true;
+                    break;
+                }
 
-            lastCollectTime_ = now;     // Remember when this pickup occurred
-            hasLastCollectTime_ = true; // Mark that chain logic is active
-        }
-        break;
-    }
+                const double dt = now - lastTickTime_;
+                if (dt <= 0.0) {
+                    break;
+                }
 
-    case EventType::Tick: {
-        auto& sw = Stopwatch::getInstance(); // Global timer to measure passing time
-        double now = sw.elapsed();           // Current timestamp since game start
+                lastTickTime_ = now;
 
-        if (!hasLastTickTime_) {     // First tick ever -> initialize timer only
-            lastTickTime_ = now;     // Store the moment this tick occurred
-            hasLastTickTime_ = true; // Mark that decay timing is active
-            break;
-        }
+                decayAccumulator_ += decayRatePerSecond_ * dt;
 
-        double dt = now - lastTickTime_; // Time passed since previous tick
-        if (dt <= 0.0) {                 // Avoid negative/zero dt
-            break;
-        }
+                const int wholePoints = static_cast<int>(decayAccumulator_);
+                if (wholePoints > 0) {
+                    decayAccumulator_ -= wholePoints;
 
-        lastTickTime_ = now; // Advance decay timer
+                    currentScore_ -= wholePoints;
+                    if (currentScore_ < 0) {
+                        currentScore_ = 0;
+                    }
+                }
+                break;
+            }
 
-        decayAccumulator_ += decayRatePerSecond_ * dt; // Add score decay amount scaled by real elapsed time
+            case EventType::Died: {
+                const auto* payload = std::get_if<CollectedPayload>(&event.payload);
+                if (!payload) {
+                    break;
+                }
 
-        int wholePoints = static_cast<int>(decayAccumulator_);
-        if (wholePoints > 0) {                // Only apply decay in whole point chunks
-            decayAccumulator_ -= wholePoints; // Remove processed fraction
+                const int deathPenalty = payload->value;
+                add(deathPenalty);
 
-            currentScore_ -= wholePoints; // Subtract score decay
-            if (currentScore_ < 0)
-                currentScore_ = 0; // Prevent negative score
-        }
-        break;
-    }
+                if (currentScore_ < 0) {
+                    currentScore_ = 0;
+                }
+                break;
+            }
 
-    case EventType::Died:
-        if (auto payload = std::get_if<CollectedPayload>(&e.payload)) {
-            int deathPenalty_ = payload->value;
-            add(deathPenalty_);
-            if (currentScore_ < 0)
-                currentScore_ = 0;
-        }
-        break;
-
-    case EventType::Moved:
-    case EventType::StateChanged:
-        break;
-    }
-}
-
-std::vector<int> Score::loadHighscores(const std::string& path) {
-    std::vector<int> scores; // Local container for loaded scores
-
-    std::ifstream in(path); // Attempt to open highscore file
-    if (in) {               // If the file exists and is readable
-        int value = 0;
-        while (in >> value) {        // Read integers line by line
-            scores.push_back(value); // Store each score
+            case EventType::Moved:
+            case EventType::StateChanged:
+                break;
         }
     }
 
-    if (scores.empty()) {    // If no scores were loaded
-        scores.assign(5, 0); // Fill with five default zero scores
+    /**
+     * @brief Loads highscores from a file and normalizes the result to exactly five entries.
+     * @param path Path to the highscore file.
+     * @return A vector of exactly five scores sorted in descending order.
+     */
+    std::vector<int> Score::loadHighscores(const std::string& path) {
+        std::vector<int> scores;
+
+        std::ifstream in(path);
+        if (in) {
+            int value = 0;
+            while (in >> value) {
+                scores.push_back(value);
+            }
+        }
+
+        if (scores.empty()) {
+            scores.assign(5, 0);
+        }
+
+        std::sort(scores.begin(), scores.end(), std::greater<int>());
+
+        if (scores.size() < 5) {
+            scores.resize(5, 0);
+        } else if (scores.size() > 5) {
+            scores.resize(5);
+        }
+
+        return scores;
     }
 
-    std::sort(scores.begin(), scores.end(),
-              std::greater<int>()); // Sort highest to lowest
+    /**
+     * @brief Saves highscores to a file, writing exactly five lines.
+     * @param path Path to the highscore file.
+     * @param scores Scores to write.
+     */
+    void Score::saveHighscores(const std::string& path, const std::vector<int>& scores) {
+        std::ofstream out(path, std::ios::trunc);
+        if (!out) {
+            return;
+        }
 
-    if (scores.size() < 5) { // Ensure exactly 5 entries
-        scores.resize(5, 0); // Fill with zeros if too few
-    } else if (scores.size() > 5) {
-        scores.resize(5); // Trim extra entries
+        std::vector<int> copy = scores;
+        if (copy.size() < 5) {
+            copy.resize(5, 0);
+        }
+
+        for (std::size_t i = 0; i < 5 && i < copy.size(); ++i) {
+            out << copy[i] << '\n';
+        }
     }
 
-    return scores; // Return the validated, sorted list
-}
+    /**
+     * @brief Inserts a new score into an existing highscore list and returns the top five.
+     * @param current The current highscores.
+     * @param newScore The new score to insert.
+     * @return Updated highscores (max 5) sorted in descending order.
+     */
+    std::vector<int> Score::updateHighscores(const std::vector<int>& current, int newScore) {
+        std::vector<int> result = current;
+        result.push_back(newScore);
 
-void Score::saveHighscores(const std::string& path, const std::vector<int>& scores) {
-    std::ofstream out(path, std::ios::trunc);
-    if (!out) {
-        return; // Fail silently if write operation is not possible
+        std::sort(result.begin(), result.end(), std::greater<int>());
+
+        if (result.size() > 5) {
+            result.resize(5);
+        }
+
+        return result;
     }
 
-    std::vector<int> copy = scores; // Copy scores to local list for normalization
-    if (copy.size() < 5) {
-        copy.resize(5, 0); // Ensure file always contains exactly 5 lines
-    }
-
-    for (auto i = 0; i < 5 && i < copy.size(); i++) {
-        out << copy[i] << '\n'; // Write each score on a new line
-    }
-}
-
-std::vector<int> Score::updateHighscores(const std::vector<int>& current, int newScore) {
-    std::vector<int> result = current; // Start from existing scores
-    result.push_back(newScore);        // Add the newest score to the list
-
-    std::sort(result.begin(), result.end(),
-              std::greater<int>()); // Sort descending
-
-    if (result.size() > 5) {
-        result.resize(5); // Keep only top 5 results
-    }
-
-    return result; // Return updated high score list
-}
 } // namespace pacman::logic

@@ -1,42 +1,64 @@
-// LevelState.h
 #pragma once
-#include "State.h"
 
-#include <SFML/Graphics/Font.hpp>
-#include <memory>
+#include "State.h"
 
 #include "../factory/ConcreteFactory.h"
 #include "../logic/entities/Direction.h"
+#include "../logic/score/Score.h"
 #include "../logic/world/TileMap.h"
 #include "../logic/world/World.h"
-
-#include "../logic/score/Score.h"
 #include "../ui/Hud.h"
+
+#include <SFML/Graphics/Font.hpp>
+
+#include <memory>
 
 namespace pacman::app {
 
-class LevelState : public State {
-public:
-    explicit LevelState(StateManager& m); // Construct state and hook into StateManager
+    /**
+     * @brief Gameplay state responsible for running a level: input, world updates, and rendering.
+     */
+    class LevelState : public State {
+    public:
+        /**
+         * @brief Constructs the level state and initializes world, factory, HUD, and timers.
+         * @param manager Reference to the central StateManager.
+         */
+        explicit LevelState(StateManager& manager);
 
-    void handleEvent(const sf::Event& e) override; // Translate SFML events into desired direction
-    void update(double dt) override;               // Advance world simulation
-    void draw(sf::RenderWindow& w) override;       // Draw all views for the current frame
+        /**
+         * @brief Translates SFML events into player intentions (movement, pause).
+         * @param event The SFML event to process.
+         */
+        void handleEvent(const sf::Event& event) override;
 
-private:
-    std::unique_ptr<logic::World> world_;                       // Owns logic world instance for this level
-    logic::TileMap tileMap_;                                    // Tile layout used to spawn entities
-    std::unique_ptr<ConcreteFactory> factory_;                  // Creates model + attaches views for this level
-    logic::Direction desiredDirection_{logic::Direction::None}; // Last request direction from player input
+        /**
+         * @brief Advances world simulation and handles transitions such as victory/game over and level clears.
+         * @param dt Fixed timestep in seconds.
+         */
+        void update(double dt) override;
 
-    double startDelay_ = 1.0;
-    double startDelayTimer_ = 0.0;
+        /**
+         * @brief Draws all views created for the level and the HUD.
+         * @param window The render window to draw to.
+         */
+        void draw(sf::RenderWindow& window) override;
 
-    logic::Score score_;
-    sf::Font hudFont_;
-    std::unique_ptr<Hud> hud_;
+    private:
+        std::unique_ptr<logic::World> world_;
+        logic::TileMap tileMap_;
+        std::unique_ptr<ConcreteFactory> factory_;
+        logic::Direction desiredDirection_{logic::Direction::None};
 
-    unsigned int windowWidth_{800};  // Cached window width used for layout
-    unsigned int windowHeight_{600}; // Cached window height used for layout
-};
+        double startDelay_ = 1.0;
+        double startDelayTimer_ = 0.0;
+
+        logic::Score score_;
+        sf::Font hudFont_;
+        std::unique_ptr<Hud> hud_;
+
+        unsigned int windowWidth_{800};
+        unsigned int windowHeight_{600};
+    };
+
 } // namespace pacman::app

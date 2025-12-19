@@ -1,39 +1,83 @@
-// logic/score/Score.hpp
 #pragma once
-
-#include <string>
-#include <vector>
 
 #include "../observer/Event.h"
 #include "../observer/Observer.h"
 
+#include <string>
+#include <vector>
+
 namespace pacman::logic {
 
-class Score : public Observer {
-public:
-    Score() = default; // Simple score tracker
+    /**
+     * @brief Score tracker that observes domain events and maintains a running score.
+     *
+     * The score supports:
+     * - collection chain multipliers based on time between pickups,
+     * - score decay over time driven by Tick events,
+     * - score adjustments on death events (as implemented).
+     */
+    class Score : public Observer {
+    public:
+        /**
+         * @brief Constructs a score tracker.
+         */
+        Score() = default;
 
-    void reset() noexcept;                               // Reset player score to zero
-    void add(int amount) { currentScore_ += amount; }    // Add points
-    int value() const noexcept { return currentScore_; } // Read current score
+        /**
+         * @brief Resets score state, including combo timing and decay timing.
+         */
+        void reset() noexcept;
 
-    void onEvent(const Event& e) override; // Allow Score to observe game events (coins, fruits, etc.)
+        /**
+         * @brief Adds the given amount to the current score.
+         * @param amount Points to add (may be negative depending on caller/event design).
+         */
+        void add(int amount) { currentScore_ += amount; }
 
-    static std::vector<int> loadHighscores(const std::string& path); // Read top 5 scores from file
-    static void saveHighscores(const std::string& path,
-                               const std::vector<int>& scores); // Write scores to file
-    static std::vector<int> updateHighscores(const std::vector<int>& current,
-                                             int newScore); // Insert + sort new highscore
+        /**
+         * @brief Returns the current score value.
+         * @return Current score.
+         */
+        int value() const noexcept { return currentScore_; }
 
-private:
-    int currentScore_{0};            // Player's current running score
-    double lastCollectTime_{0.0};    // Timestamp of last collected coin/fruit
-    bool hasLastCollectTime_{false}; // True once first collect happens
+        /**
+         * @brief Receives and processes logic events that influence the score.
+         * @param event Incoming logic event.
+         */
+        void onEvent(const Event& event) override;
 
-    // Basis-score-decrement over time
-    double lastTickTime_{0.0};       // Last time we pressed a tick
-    bool hasLastTickTime_{false};    // Only be active after first tick
-    double decayAccumulator_{0.0};   // Fractions that do not lead tot full points
-    double decayRatePerSecond_{1.0}; // Amount of points that disappear
-};
+        /**
+         * @brief Loads highscores from a file and normalizes to exactly five entries.
+         * @param path Path to the highscore file.
+         * @return Vector of five scores sorted in descending order.
+         */
+        static std::vector<int> loadHighscores(const std::string& path);
+
+        /**
+         * @brief Saves highscores to a file, writing exactly five lines.
+         * @param path Path to the highscore file.
+         * @param scores Scores to write.
+         */
+        static void saveHighscores(const std::string& path, const std::vector<int>& scores);
+
+        /**
+         * @brief Inserts a new score into an existing highscore list and returns the top five.
+         * @param current Current highscore list.
+         * @param newScore Score to insert.
+         * @return Updated highscore list (max 5), sorted descending.
+         */
+        static std::vector<int> updateHighscores(const std::vector<int>& current, int newScore);
+
+    private:
+        int currentScore_{0};
+
+        double lastCollectTime_{0.0};
+        bool hasLastCollectTime_{false};
+
+        double lastTickTime_{0.0};
+        bool hasLastTickTime_{false};
+        double decayAccumulator_{0.0};
+        double decayRatePerSecond_{1.0};
+    };
+
 } // namespace pacman::logic

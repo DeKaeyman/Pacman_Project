@@ -1,31 +1,68 @@
 #pragma once
+
 #include <chrono>
 #include <mutex>
 
 namespace pacman::logic {
 
-class Stopwatch {
-public:
-    static Stopwatch& getInstance(); // Returns the global singleton instance
+    /**
+     * @brief Thread-safe singleton stopwatch for timing and animation.
+     *
+     * tick() updates the delta time since the previous tick.
+     * reset() restarts elapsed time and clears delta time.
+     */
+    class Stopwatch {
+    public:
+        /**
+         * @brief Returns the singleton Stopwatch instance.
+         * @return Reference to the global stopwatch.
+         */
+        static Stopwatch& getInstance();
 
-    void tick();  // Updates deltaTime based on time since last tick
-    void reset(); // Resets the clock to current time and clears deltaTime
+        /**
+         * @brief Updates deltaTime based on time since the last tick() call.
+         */
+        void tick();
 
-    double deltaTime() const noexcept; // Time in seconds between last two ticks
-    double elapsed() const noexcept;   // Total time in seconds since stopwatch start
+        /**
+         * @brief Resets the stopwatch to the current time and clears deltaTime.
+         */
+        void reset();
 
-private:
-    Stopwatch();
-    ~Stopwatch() = default;
-    Stopwatch(const Stopwatch&) = delete;            // Disable copy constructor
-    Stopwatch& operator=(const Stopwatch&) = delete; // Disable assign operator
+        /**
+         * @brief Returns time in seconds between the last two tick() calls.
+         * @return Delta time in seconds.
+         */
+        double deltaTime() const noexcept;
 
-    using Clock = std::chrono::high_resolution_clock; // High precision clock type
-    using TimePoint = std::chrono::time_point<Clock>; // Represents specific time points
+        /**
+         * @brief Returns total time in seconds since construction or the last reset().
+         * @return Elapsed time in seconds.
+         */
+        double elapsed() const noexcept;
 
-    TimePoint startTime_;    // Timestamp when stopwatch started since last reset
-    TimePoint lastTick_;     // Timestamp of last tick() call
-    double deltaTime_{0.0};  // Duration in seconds between last two ticks
-    mutable std::mutex mtx_; // Mutex to protect concurrent read/write access
-};
+    private:
+        /**
+         * @brief Constructs the stopwatch and initializes timestamps.
+         */
+        Stopwatch();
+
+        /**
+         * @brief Default destructor.
+         */
+        ~Stopwatch() = default;
+
+        Stopwatch(const Stopwatch&) = delete;
+        Stopwatch& operator=(const Stopwatch&) = delete;
+
+    private:
+        using Clock = std::chrono::high_resolution_clock;
+        using TimePoint = std::chrono::time_point<Clock>;
+
+        TimePoint startTime_;
+        TimePoint lastTick_;
+        double deltaTime_{0.0};
+        mutable std::mutex mtx_;
+    };
+
 } // namespace pacman::logic

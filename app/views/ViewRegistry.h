@@ -1,30 +1,52 @@
 #pragma once
+
 #include "View.h"
+
 #include <SFML/Graphics/RenderWindow.hpp>
+
 #include <memory>
 #include <vector>
 
 namespace pacman::app {
 
-class ViewRegistry { // Owns and batches all views for drawing
-public:
-    using Ptr = std::unique_ptr<View>;
+    /**
+     * @brief Owns and manages all active views for rendering.
+     *
+     * The registry batches drawing calls and centralizes ownership
+     * of all view instances created during gameplay.
+     */
+    class ViewRegistry {
+    public:
+        /**
+         * @brief Unique pointer type used for storing views.
+         */
+        using Ptr = std::unique_ptr<View>;
 
-    void add(Ptr v) { // Register a new view into the registry
-        if (v)
-            views_.push_back(std::move(v)); // Store only non-null views
-    }
+        /**
+         * @brief Registers a new view in the registry.
+         * @param view The view to add (ignored if null).
+         */
+        void add(Ptr view);
 
-    void drawAll(sf::RenderWindow& w) { // Draw all registered views into the window
-        for (auto& v : views_)
-            v->draw(w); // Delegate draw to each view
-    }
+        /**
+         * @brief Draws all registered views to the given render window.
+         * @param window The render window to draw to.
+         */
+        void drawAll(sf::RenderWindow& window);
 
-    void clear() { views_.clear(); }
+        /**
+         * @brief Removes all registered views.
+         */
+        void clear();
 
-    std::vector<Ptr>& raw() { return views_; } // Expose container for management
+        /**
+         * @brief Provides direct access to the internal view container.
+         * @return Reference to the vector of view pointers.
+         */
+        std::vector<Ptr>& raw();
 
-private:
-    std::vector<Ptr> views_; // Storage for all owned views
-};
+    private:
+        std::vector<Ptr> views_;
+    };
+
 } // namespace pacman::app

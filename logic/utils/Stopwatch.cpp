@@ -1,39 +1,67 @@
 #include "Stopwatch.h"
 
+#include <chrono>
+#include <mutex>
+
 namespace pacman::logic {
 
-Stopwatch::Stopwatch() {
-    startTime_ = Clock::now(); // Capture current time as start
-    lastTick_ = startTime_;    // Initialize lastTick to same value
-}
+    /**
+     * @brief Constructs the stopwatch and initializes its internal timestamps.
+     */
+    Stopwatch::Stopwatch()
+            : startTime_(Clock::now()),
+              lastTick_(startTime_),
+              deltaTime_(0.0) {}
 
-Stopwatch& Stopwatch::getInstance() {
-    static Stopwatch instance; // Static instance ensures one global stopwatch
-    return instance;
-}
+    /**
+     * @brief Returns the singleton Stopwatch instance.
+     * @return Reference to the global stopwatch.
+     */
+    Stopwatch& Stopwatch::getInstance() {
+        static Stopwatch instance;
+        return instance;
+    }
 
-void Stopwatch::tick() {
-    std::scoped_lock lock(mtx_);                                         // Thread safe access to timing data
-    const auto now = Clock::now();                                       // Capture current time
-    deltaTime_ = std::chrono::duration<double>(now - lastTick_).count(); // Compute time since last tick
-    lastTick_ = now;                                                     // Update last tick
-}
+    /**
+     * @brief Updates the delta time based on the time since the last tick.
+     */
+    void Stopwatch::tick() {
+        std::scoped_lock lock(mtx_);
 
-void Stopwatch::reset() {
-    std::scoped_lock lock(mtx_); // Thread safe reset
-    startTime_ = Clock::now();   // Reset start time to now
-    lastTick_ = startTime_;      // Reset last tick to same value
-    deltaTime_ = 0.0;            // Clear previous delta
-}
+        const auto now = Clock::now();
+        deltaTime_ = std::chrono::duration<double>(now - lastTick_).count();
+        lastTick_ = now;
+    }
 
-double Stopwatch::deltaTime() const noexcept {
-    std::scoped_lock lock(mtx_); // Protect concurrent reads
-    return deltaTime_;           // Return time difference between ticks
-}
+    /**
+     * @brief Resets the stopwatch start time and clears delta time.
+     */
+    void Stopwatch::reset() {
+        std::scoped_lock lock(mtx_);
 
-double Stopwatch::elapsed() const noexcept {
-    std::scoped_lock lock(mtx_);                                    // Thread safe read of elapsed time
-    const auto now = Clock::now();                                  // Capture current time
-    return std::chrono::duration<double>(now - startTime_).count(); // Seconds since start/reset
-}
+        startTime_ = Clock::now();
+        lastTick_ = startTime_;
+        deltaTime_ = 0.0;
+    }
+
+    /**
+     * @brief Returns the time in seconds between the last two tick() calls.
+     * @return Delta time in seconds.
+     */
+    double Stopwatch::deltaTime() const noexcept {
+        std::scoped_lock lock(mtx_);
+        return deltaTime_;
+    }
+
+    /**
+     * @brief Returns the elapsed time in seconds since the last reset (or construction).
+     * @return Elapsed time in seconds.
+     */
+    double Stopwatch::elapsed() const noexcept {
+        std::scoped_lock lock(mtx_);
+
+        const auto now = Clock::now();
+        return std::chrono::duration<double>(now - startTime_).count();
+    }
+
 } // namespace pacman::logic

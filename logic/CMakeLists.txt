@@ -2,7 +2,6 @@
 add_library(logic STATIC
         utils/Stopwatch.cpp
         utils/Stopwatch.h
-        entities/Entity.cpp
         entities/Entity.h
         entities/Coin.cpp
         entities/Coin.h
@@ -25,6 +24,7 @@ add_library(logic STATIC
         utils/Random.h
         score/Score.cpp
         score/Score.h
+        observer/Subject.cpp
 )
 
 # Publieke include-paden (zodat app headers uit logic kan includen)

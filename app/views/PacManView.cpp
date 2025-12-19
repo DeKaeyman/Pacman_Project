@@ -1,113 +1,135 @@
 #include "PacManView.h"
+
 #include <SFML/Graphics/RenderWindow.hpp>
+
 #include <cmath>
 
 namespace pacman::app {
 
-sf::Texture PacManView::texture_{};
-bool PacManView::textureLoaded_{false};
+    sf::Texture PacManView::texture_{};
+    bool PacManView::textureLoaded_{false};
 
-namespace {
-constexpr const char* SPRITE_SHEET_PATH = "assets/sprites/sprite.png";
+    namespace {
+        constexpr const char* kSpriteSheetPath = "assets/sprites/sprite.png";
 
-constexpr unsigned int SHEET_COLS = 19;
-constexpr unsigned int SHEET_ROWS = 19;
+        constexpr unsigned int kSheetCols = 19;
+        constexpr unsigned int kSheetRows = 19;
 
-// All Pac-Man frames sit in one column (0-based).
-constexpr unsigned int PACMAN_COL = 17;
+        constexpr unsigned int kPacManCol = 17;
 
-// Row indices for each animation frame (0-based).
-constexpr unsigned int ROW_CLOSED = 0;
-constexpr unsigned int ROW_RIGHT_SMALL = 1;
-constexpr unsigned int ROW_RIGHT_BIG = 2;
-constexpr unsigned int ROW_DOWN_SMALL = 4;
-constexpr unsigned int ROW_DOWN_BIG = 5;
-constexpr unsigned int ROW_LEFT_SMALL = 7;
-constexpr unsigned int ROW_LEFT_BIG = 8;
-constexpr unsigned int ROW_UP_SMALL = 10;
-constexpr unsigned int ROW_UP_BIG = 11;
+        constexpr unsigned int kRowClosed = 0;
+        constexpr unsigned int kRowRightSmall = 1;
+        constexpr unsigned int kRowRightBig = 2;
+        constexpr unsigned int kRowDownSmall = 4;
+        constexpr unsigned int kRowDownBig = 5;
+        constexpr unsigned int kRowLeftSmall = 7;
+        constexpr unsigned int kRowLeftBig = 8;
+        constexpr unsigned int kRowUpSmall = 10;
+        constexpr unsigned int kRowUpBig = 11;
 
-sf::IntRect spriteRectFromGrid(const sf::Texture& tex, unsigned int col, unsigned int row) {
-    const auto size = tex.getSize(); // Pixel dimension of the whole sheet
-    const float cellW = static_cast<float>(size.x) / static_cast<float>(SHEET_COLS); // Width of one cell
-    const float cellH = static_cast<float>(size.y) / static_cast<float>(SHEET_ROWS); // Height of one cell
+        /**
+         * @brief Computes an SFML texture rectangle from a grid-based sprite sheet.
+         * @param texture The sprite sheet texture.
+         * @param col Zero-based column index in the sheet grid.
+         * @param row Zero-based row index in the sheet grid.
+         * @return The corresponding sub-rectangle in pixel coordinates.
+         */
+        sf::IntRect spriteRectFromGrid(const sf::Texture& texture, unsigned int col, unsigned int row) {
+            const auto size = texture.getSize();
+            const float cellW = static_cast<float>(size.x) / static_cast<float>(kSheetCols);
+            const float cellH = static_cast<float>(size.y) / static_cast<float>(kSheetRows);
 
-    const int left = static_cast<int>(std::round(col * cellW));
-    const int top = static_cast<int>(std::round(row * cellH));
-    const int right = static_cast<int>(std::round((col + 1u) * cellW));
-    const int bottom = static_cast<int>(std::round((row + 1u) * cellH));
+            const int left = static_cast<int>(std::round(static_cast<float>(col) * cellW));
+            const int top = static_cast<int>(std::round(static_cast<float>(row) * cellH));
+            const int right = static_cast<int>(std::round(static_cast<float>(col + 1u) * cellW));
+            const int bottom = static_cast<int>(std::round(static_cast<float>(row + 1u) * cellH));
 
-    return {left, top, right - left, bottom - top}; // intRect describing the cell region
-}
+            return {left, top, right - left, bottom - top};
+        }
 
-unsigned int pickRowFor(logic::Direction dir, double t) {
-    const double speed = 10.0;                      // Controls how fast the mouth cycles
-    const double phase = std::fmod(t * speed, 4.0); // Animation phase in range [0,4)
+        /**
+         * @brief Selects the appropriate animation row for Pac-Man based on direction and elapsed time.
+         * @param dir Current facing direction.
+         * @param t Elapsed time used to animate the mouth.
+         * @return Sprite sheet row index representing the chosen frame.
+         */
+        unsigned int pickRowFor(logic::Direction dir, double t) {
+            const double speed = 10.0;
+            const double phase = std::fmod(t * speed, 4.0);
 
-    bool useClosed = (phase < 1.0);
-    bool useSmall = (phase >= 1.0 && phase < 2.5);
-    bool useBig = (phase >= 2.5 && phase < 3.5);
+            const bool useClosed = (phase < 1.0);
+            const bool useSmall = (phase >= 1.0 && phase < 2.5);
+            const bool useBig = (phase >= 2.5 && phase < 3.5);
 
-    if (useClosed) {
-        return ROW_CLOSED; // Always use closed frame in closed phase
+            if (useClosed) {
+                return kRowClosed;
+            }
+
+            switch (dir) {
+                case logic::Direction::Right:
+                    return useBig ? kRowRightBig : (useSmall ? kRowRightSmall : kRowClosed);
+                case logic::Direction::Down:
+                    return useBig ? kRowDownBig : (useSmall ? kRowDownSmall : kRowClosed);
+                case logic::Direction::Left:
+                    return useBig ? kRowLeftBig : (useSmall ? kRowLeftSmall : kRowClosed);
+                case logic::Direction::Up:
+                    return useBig ? kRowUpBig : (useSmall ? kRowUpSmall : kRowClosed);
+                case logic::Direction::None:
+                default:
+                    return kRowClosed;
+            }
+        }
+    } // namespace
+
+    /**
+     * @brief Loads the shared sprite sheet texture on first use.
+     *
+     * If loading fails, rendering will be skipped (matching current behavior).
+     */
+    void PacManView::ensureTextureLoaded() {
+        if (textureLoaded_) {
+            return;
+        }
+
+        if (!texture_.loadFromFile(kSpriteSheetPath)) {
+            return;
+        }
+
+        textureLoaded_ = true;
     }
 
-    // Choose row based on facing direction and mouth state
-    switch (dir) {
-    case logic::Direction::Right:
-        if (useBig)
-            return ROW_RIGHT_BIG;
-        if (useSmall)
-            return ROW_RIGHT_SMALL;
-        return ROW_CLOSED;
-    case logic::Direction::Down:
-        if (useBig)
-            return ROW_DOWN_BIG;
-        if (useSmall)
-            return ROW_DOWN_SMALL;
-        return ROW_CLOSED;
-    case logic::Direction::Left:
-        if (useBig)
-            return ROW_LEFT_BIG;
-        if (useSmall)
-            return ROW_LEFT_SMALL;
-        return ROW_CLOSED;
-    case logic::Direction::Up:
-        if (useBig)
-            return ROW_UP_BIG;
-        if (useSmall)
-            return ROW_UP_SMALL;
-        return ROW_CLOSED;
+    /**
+     * @brief Constructs a PacManView bound to the given Pac-Man model and prepares its sprite.
+     * @param model Shared pointer to the Pac-Man logic entity.
+     */
+    PacManView::PacManView(const std::shared_ptr<pacman::logic::PacMan>& model)
+            : model_(model) {
+        ensureTextureLoaded();
+
+        if (textureLoaded_) {
+            sprite_.setTexture(texture_);
+            updateSpriteFrame();
+        }
     }
-    return ROW_CLOSED;
-}
-} // namespace
 
-void PacManView::ensureTextureLoaded() {
-    if (textureLoaded_)
-        return; // Do nothing if already loaded
-    if (!texture_.loadFromFile(SPRITE_SHEET_PATH))
-        return;            // Try to load sprite sheet
-    textureLoaded_ = true; // Mark as loaded on success
-}
+    /**
+     * @brief Reacts to Pac-Man state change events (direction changes).
+     * @param event Incoming logic event.
+     */
+    void PacManView::onEvent(const pacman::logic::Event& event) {
+        using pacman::logic::EventType;
+        using pacman::logic::StateChangedPayload;
 
-PacManView::PacManView(const std::shared_ptr<pacman::logic::PacMan>& model) : model_(model) {
-    ensureTextureLoaded(); // Make sure texture is ready
+        if (event.type != EventType::StateChanged) {
+            return;
+        }
 
-    if (textureLoaded_) {
-        sprite_.setTexture(texture_); // Attach texture to sprite
-        updateSpriteFrame();          // Pick initial frame based on default direction
-    }
-}
+        const auto* payload = std::get_if<StateChangedPayload>(&event.payload);
+        if (!payload) {
+            return;
+        }
 
-void PacManView::onEvent(const pacman::logic::Event& e) {
-    using pacman::logic::EventType;
-    using pacman::logic::MovedPayload;
-    using pacman::logic::StateChangedPayload;
-
-    if (e.type == EventType::StateChanged) { // StateChanged encodes direction changes
-        if (const auto* payload = std::get_if<pacman::logic::StateChangedPayload>(&e.payload)) {
-            switch (payload->code) { // Interpret code as direction enum
+        switch (payload->code) {
             case 0:
                 direction_ = logic::Direction::Right;
                 break;
@@ -122,54 +144,51 @@ void PacManView::onEvent(const pacman::logic::Event& e) {
                 break;
             default:
                 break;
-            }
         }
     }
-}
 
-void PacManView::updateSpriteFrame() {
-    if (!textureLoaded_)
-        return; // no texture, no frame update
+    /**
+     * @brief Updates the sprite frame selection based on direction and elapsed time.
+     */
+    void PacManView::updateSpriteFrame() {
+        if (!textureLoaded_) {
+            return;
+        }
 
-    auto& sw = pacman::logic::Stopwatch::getInstance(); // Global stopwatch singleton
-    const double t = sw.elapsed();                      // Total elapsed time since start/reset
+        auto& sw = pacman::logic::Stopwatch::getInstance();
+        const double t = sw.elapsed();
 
-    const unsigned int row = pickRowFor(direction_, t);              // Select proper animation row
-    const auto rect = spriteRectFromGrid(texture_, PACMAN_COL, row); // Compute UV rectangle
+        const unsigned int row = pickRowFor(direction_, t);
+        sprite_.setTextureRect(spriteRectFromGrid(texture_, kPacManCol, row));
+    }
 
-    sprite_.setTextureRect(rect); // Apply new texture rectangle to sprite
-}
+    /**
+     * @brief Draws Pac-Man centered in his tile using world-to-pixel mapping and animated frames.
+     * @param window The render window to draw to.
+     */
+    void PacManView::draw(sf::RenderWindow& window) {
+        if (!model_ || !model_->active || !camera_ || !textureLoaded_) {
+            return;
+        }
 
-void PacManView::draw(sf::RenderWindow& window) {
-    if (!model_)
-        return;
-    if (!model_->active)
-        return;
-    if (!camera_)
-        return;
-    if (!textureLoaded_)
-        return;
+        updateSpriteFrame();
 
-    updateSpriteFrame(); // Update frame before drawing
+        const pacman::logic::Rect worldRect = model_->bounds();
+        const auto pixelRect = camera_->worldToPixel(worldRect);
 
-    pacman::logic::Rect r = model_->bounds();  // World space bounding box of Pacman
-    auto pixelRect = camera_->worldToPixel(r); // Convert to pixel space rectangle
+        const auto texRect = sprite_.getTextureRect();
+        const float scale = static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width);
 
-    const auto& texRect = sprite_.getTextureRect(); // Current sprite frame size in pixels
+        const float finalW = static_cast<float>(texRect.width) * scale;
+        const float finalH = static_cast<float>(texRect.height) * scale;
 
-    float scale = static_cast<float>(pixelRect.w) / static_cast<float>(texRect.width); // Uniform scaling
+        const float posX = static_cast<float>(pixelRect.x) + (static_cast<float>(pixelRect.w) - finalW) * 0.5f;
+        const float posY = static_cast<float>(pixelRect.y) + (static_cast<float>(pixelRect.h) - finalH) * 0.5f;
 
-    float finalW = texRect.width * scale;  // Actual drawn width
-    float finalH = texRect.height * scale; // Actual drawn height
+        sprite_.setPosition(posX - 3.5f, posY);
+        sprite_.setScale(scale, scale);
 
-    float posX = static_cast<float>(pixelRect.x) + (pixelRect.w - finalW) * 0.5f; // Center horizontally
-    float posY = static_cast<float>(pixelRect.y) + (pixelRect.h - finalH) * 0.5f; // Center vertically
+        window.draw(sprite_);
+    }
 
-    sprite_.setPosition(posX - 3.5f,
-                        posY);      // Place sprite on screen (- 3.5f because of sprite
-                                    // not being a perfect square)
-    sprite_.setScale(scale, scale); // Apply uniform scaling
-
-    window.draw(sprite_); // Draw Pacman sprite
-}
 } // namespace pacman::app

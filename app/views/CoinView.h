@@ -1,28 +1,51 @@
-// app/views/CoinView.h
 #pragma once
 
-#include "../logic/entities/Coin.h"
 #include "View.h"
+
+#include "../logic/entities/Coin.h"
+
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
+#include <memory>
+
 namespace pacman::app {
 
-class CoinView : public View {
-public:
-    explicit CoinView(const std::shared_ptr<pacman::logic::Coin>& model); // Stores model and sets up sprite
+    /**
+     * @brief View responsible for rendering a coin entity and reacting to collection events.
+     */
+    class CoinView : public View {
+    public:
+        /**
+         * @brief Constructs a CoinView bound to the given coin model.
+         * @param model Shared pointer to the coin logic entity.
+         */
+        explicit CoinView(const std::shared_ptr<pacman::logic::Coin>& model);
 
-    void draw(sf::RenderWindow& window) override;         // Draws the coin using world -> pixel convertion
-    void onEvent(const pacman::logic::Event& e) override; // Responds to coin collection events
+        /**
+         * @brief Draws the coin using world-to-pixel mapping and sprite scaling.
+         * @param window The render window to draw to.
+         */
+        void draw(sf::RenderWindow& window) override;
 
-private:
-    std::shared_ptr<pacman::logic::Coin> model_; // Logical model this view represents
-    sf::Sprite sprite_;                          // Visual sprite for the Coin
-    bool visible_{true};                         // Whether this coin should be drawn
+        /**
+         * @brief Responds to logic events (e.g., coin collected).
+         * @param event Incoming logic event.
+         */
+        void onEvent(const pacman::logic::Event& event) override;
 
-    static sf::Texture texture_; // Shared sprite sheet
-    static bool textureLoaded_;  // Tracks if texture_ has been loaded
+    private:
+        std::shared_ptr<pacman::logic::Coin> model_;
+        sf::Sprite sprite_;
+        bool visible_{true};
 
-    static void ensureTextureLoaded(); // Lazy loader for texture_
-};
+        static sf::Texture texture_;
+        static bool textureLoaded_;
+
+        /**
+         * @brief Loads the shared sprite sheet texture on first use.
+         */
+        static void ensureTextureLoaded();
+    };
+
 } // namespace pacman::app

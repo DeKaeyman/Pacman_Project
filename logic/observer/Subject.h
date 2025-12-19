@@ -1,33 +1,41 @@
 #pragma once
+
 #include "Observer.h"
+
 #include <algorithm>
 #include <vector>
 
 namespace pacman::logic {
 
-class Subject { // Observable base that manages a list of observers
-public:
-    void attach(Observer* o) { // Register an observer if not already present
-        if (!o)
-            return;
-        if (std::find(observers_.begin(), observers_.end(), o) == observers_.end())
-            observers_.push_back(o); // Avoid duplicates
-    }
+    /**
+     * @brief Base class for observable logic entities.
+     *
+     * Manages a list of observers and dispatches events to them.
+     * Observers are stored as raw pointers with externally managed lifetimes.
+     */
+    class Subject {
+    public:
+        /**
+         * @brief Attaches an observer if it is not already registered.
+         * @param observer Pointer to the observer.
+         */
+        void attach(Observer* observer);
 
-    void detach(Observer* o) { // Unregister an observer if present
-        auto it = std::remove(observers_.begin(), observers_.end(), o);
-        observers_.erase(it, observers_.end());
-    }
+        /**
+         * @brief Detaches a previously registered observer.
+         * @param observer Pointer to the observer.
+         */
+        void detach(Observer* observer);
 
-protected:
-    void notify(const Event& e) { // Broadcast an event to all observers
-        auto copy = observers_;   // Copy to allow safe modification
-        for (auto* o : copy)
-            if (o)
-                o->onEvent(e); // Call each observer if still valid
-    }
+    protected:
+        /**
+         * @brief Notifies all registered observers of an event.
+         * @param event The event to dispatch.
+         */
+        void notify(const Event& event);
 
-private:
-    std::vector<Observer*> observers_{}; // Raw pointers with external lifetime management
-};
+    private:
+        std::vector<Observer*> observers_;
+    };
+
 } // namespace pacman::logic

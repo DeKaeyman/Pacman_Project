@@ -1,25 +1,45 @@
-// logic/entities/Fruit.cpp
 #include "Fruit.h"
+
 #include "observer/Event.h"
 
 namespace pacman::logic {
 
-Fruit::Fruit(const Rect& area, int value) : area_(area), value_(value) {
-    solid = false; // Fruit does not block movement
-    active = true; // Fruit begins active and drawable
-}
+    /**
+     * @brief Constructs a fruit entity with a given bounding area and score value.
+     *
+     * Fruits are non-solid collectables that emit a Collected event
+     * when picked up by the player.
+     *
+     * @param area World-space bounding box of the fruit.
+     * @param value Score value awarded upon collection.
+     */
+    Fruit::Fruit(const Rect& area, int value)
+            : area_(area),
+              value_(value) {
+        solid = false;
+        active = true;
+    }
 
-void Fruit::collect() {
-    if (!active)
-        return; // Skip if already collected
+    /**
+     * @brief Marks the fruit as collected and notifies observers.
+     *
+     * If the fruit is already inactive, the call has no effect.
+     * On successful collection, a Collected event is emitted
+     * containing the fruit's score value.
+     */
+    void Fruit::collect() {
+        if (!active) {
+            return;
+        }
 
-    active = false; // Mark fruit as removed from world
+        active = false;
 
-    CollectedPayload payload{value_}; // Score value inside payload
-    Event e{};                        // Event object
-    e.type = EventType::Collected;    // Event identifies “Fruit/Coin collected”
-    e.payload = payload;              // Attach payload data
+        CollectedPayload payload{value_};
+        Event event{};
+        event.type = EventType::Collected;
+        event.payload = payload;
 
-    notify(e); // Notify views
-}
+        notify(event);
+    }
+
 } // namespace pacman::logic
