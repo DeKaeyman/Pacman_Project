@@ -61,8 +61,8 @@
 * [x] Zorg voor **resize-safe UI** (HUD en sprites schalen via Camera; geen magic pixels).
 * [x] Verbeter **sprite selectie**: Pac-Man/ghost sprite index op richting; ogen tonen lock-richting.
 * [x] Maak **level loader** (tekst/bitmap) die walls/coins/fruits in World vult; zo kun je snel layout wijzigen.
-* [ ] Automatiseer **build**: CMake targets `logic`, `app`, `tests`; install rules voor assets; compileer met C++20.
-* [ ] Configureer **CI** (bijv. CircleCI) om op Ubuntu 24.04.3 met SFML 2.6.1, CMake 3.28.3, g++13/clang18 te bouwen; toon badge in README.
+* [x] Automatiseer **build**: CMake targets `logic`, `app`, `tests`; install rules voor assets; compileer met C++20.
+* [x] Configureer **CI** (bijv. CircleCI) om op Ubuntu 24.04.3 met SFML 2.6.1, CMake 3.28.3, g++13/clang18 te bouwen; toon badge in README.
 * [x] Controleer **smart pointer ownership** (unique voor exclusief, shared waar nodig, weak om cycles te breken). Geen raw pointers behalve waar patroon vereist (documenteer).
 * [x] Voeg **documentation** toe: korte ontwerp-overzicht (2 A4), designkeuzes, patronen, extensies, link naar gameplay-video (10 min) en repo. 
 * [x] Maak **report** secties: architectuur, patronen (MVC/Observer/Factory/Singleton/State), quality, AI, scaling, risico’s, future work. 
@@ -73,11 +73,11 @@
 * [x] Finaliseer **LevelState** loop: input → World actions; World update(dt) → events → Views/HUD tekenen; check transitions.
 * [x] Finaliseer **PausedState**: stack-pop om terug te keren; geen World hercreatie. 
 * [x] Finaliseer **Victory/GameOver** schermen met knoppen (Menu/Next). State maakt nieuwe World voor volgend level. 
-* [ ] Check **compilatie** op referentieplatform; assets meegeleverd; run scriptje `./run.sh`. 
+* [x] Check **compilatie** op referentieplatform; assets meegeleverd; run scriptje `./run.sh`. 
 * [x] Speel **volledige playthrough**: start → level1 clear → level2 sneller/korter fear → verlies leven → respawns → game over → menu.
 * [x] Zorg dat **scoreboard** zichtbaar is bij game start; update na game over; persist naar file.
 * [x] Schrijf **README** met build-instructies, controls, features, patronen en CI badge + student-id. 
 * [ ] Neem **video** op: 3 min gameplay + 7 min design/implementatie; link in rapport.
-* [ ] Doe **valgrind/asan** run; check leaks en UB; fix virtuele destructors en initialisatie. 
-* [ ] Run **static analysis** (clang-tidy) voor referenties i.p.v. kopieën, const-correctness, no exceptions leaks.
+* [x] Doe **valgrind/asan** run; check leaks en UB; fix virtuele destructors en initialisatie. 
+* [x] Run **static analysis** (clang-tidy) voor referenties i.p.v. kopieën, const-correctness, no exceptions leaks.
 * [ ] Tag **release** op GitHub; zorg dat CI groen is op laatste commit; upload naar Blackboard + repo-link.
