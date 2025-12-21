@@ -278,8 +278,38 @@ Direction Ghost::randomDirectionFrom(const std::vector<Direction>& dirs) const {
 }
 
 /**
- * @brief Dispatches AI behavior based on gate logic and current mode.
- * @param dt Time step in seconds.
+ * Ghost AI decision tree (assignment rules):
+ *
+ * Decision points:
+ * - A new direction is chosen only at corners/intersections (i.e., when there is an actual choice).
+ * - In corridors (only forward/back possible), the ghost keeps moving forward if that move remains viable.
+ *
+ * Viable moves:
+ * - Candidate set is {Right, Left, Up, Down} filtered by collision checks (walls/gate rules).
+ * - Immediate reverse is generally avoided (no reverse rule), except when Fear mode starts:
+ *   Fear mode explicitly reverses direction on activation (see setMode(Fear)).
+ *
+ * Gate handling:
+ * - If the ghost is allowed to pass the gate, it prioritizes moving Up through the gate if possible.
+ *
+ * Modes:
+ * 1) Chase mode:
+ *    - GhostKind::A ("locked/random-ish"):
+ *        At a decision point, with probability p = 0.5 choose a random viable direction (excluding reverse if possible).
+ *        Otherwise keep current direction if still viable.
+ *    - GhostKind::B and GhostKind::C ("in-front-of Pac-Man"):
+ *        Target point = Pac-Man center + (Pac-Man facing unit vector) * aheadDistance.
+ *        At decision points, choose the direction that MINIMIZES Manhattan distance after one step.
+ *        Break ties randomly.
+ *    - GhostKind::D ("direct chase"):
+ *        Target point = Pac-Man center.
+ *        At decision points, choose the direction that MINIMIZES Manhattan distance after one step.
+ *        Break ties randomly.
+ *
+ * 2) Fear mode (triggered by fruit):
+ *    - On activation: reverse direction + reduce speed.
+ *    - At decision points, choose the direction that MAXIMIZES Manhattan distance after one step (flee behavior).
+ *    - Break ties randomly.
  */
 void Ghost::applyStrategy(double dt) {
     if (!world_) {
@@ -522,6 +552,7 @@ void Ghost::applyChaseStrategyA(double dt) {
     }
 
     auto& rng = Random::getInstance();
+    // Assignment rule: p = 0.5 chance to pick a new random viable direction at a decision point.
     const bool shouldChange = (rng.choiceIndex(2) == 0);
 
     if (!shouldChange && currentViable) {

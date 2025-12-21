@@ -22,7 +22,9 @@ namespace pacman::app {
         world_ = std::make_unique<pacman::logic::World>(*factory_);
         world_->loadLevel(tileMap_);
 
-        hudFont_.loadFromFile("assets/fonts/Crackman.otf");
+        if (!hudFont_.loadFromFile("../assets/fonts/Crackman.otf")) {
+            throw std::runtime_error("Missing/failed to load font: assets/fonts/Crackman.otf");
+        }
         hud_ = std::make_unique<Hud>(score_, *world_, hudFont_);
 
         startDelayTimer_ = startDelay_;

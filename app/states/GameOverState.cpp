@@ -32,7 +32,9 @@ void GameOverState::init(const sf::RenderWindow& window) {
     }
     initialized_ = true;
 
-    font_.loadFromFile("assets/fonts/Crackman.otf");
+    if (!font_.loadFromFile("../assets/fonts/Crackman.otf")) {
+        throw std::runtime_error("Missing/failed to load font: assets/fonts/Crackman.otf");
+    }
 
     title_.setFont(font_);
     title_.setString("GAME OVER");

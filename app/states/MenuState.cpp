@@ -81,7 +81,9 @@ void centerTextOrigin(sf::Text& text) {
  * @param manager Reference to the central StateManager.
  */
 MenuState::MenuState(StateManager& manager) : State(manager) {
-    font_.loadFromFile("assets/fonts/Crackman.otf");
+    if (!font_.loadFromFile("../assets/fonts/Crackman.otf")) {
+        throw std::runtime_error("Missing/failed to load font: assets/fonts/Crackman.otf");
+    }
     highscores_ = pacman::logic::Score::loadHighscores(highscorePath_);
 }
 

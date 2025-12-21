@@ -12,7 +12,7 @@ sf::Texture FruitView::texture_{};
 bool FruitView::textureLoaded_{false};
 
 namespace {
-constexpr const char* kSpriteSheetPath = "assets/sprites/sprite.png";
+constexpr const char* kSpriteSheetPath = "../assets/sprites/sprite.png";
 
 constexpr unsigned int kSheetCols = 19;
 constexpr unsigned int kSheetRows = 19;
