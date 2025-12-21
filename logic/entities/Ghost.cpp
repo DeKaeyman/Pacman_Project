@@ -295,8 +295,8 @@ Direction Ghost::randomDirectionFrom(const std::vector<Direction>& dirs) const {
  * Modes:
  * 1) Chase mode:
  *    - GhostKind::A ("locked/random-ish"):
- *        At a decision point, with probability p = 0.5 choose a random viable direction (excluding reverse if possible).
- *        Otherwise keep current direction if still viable.
+ *        At a decision point, with probability p = 0.5 choose a random viable direction (excluding reverse if
+ * possible). Otherwise keep current direction if still viable.
  *    - GhostKind::B and GhostKind::C ("in-front-of Pac-Man"):
  *        Target point = Pac-Man center + (Pac-Man facing unit vector) * aheadDistance.
  *        At decision points, choose the direction that MINIMIZES Manhattan distance after one step.
