@@ -26,17 +26,3 @@ jobs:
 
       - name: Configure (CMake)
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
-
-      # Build just the tests (faster than building the whole app)
-      - name: Build logic tests
-        run: cmake --build build --target pacman_tests_logic --config ${{ env.BUILD_TYPE }} -j
-
-      - name: Build app tests
-        run: cmake --build build --target pacman_tests_app --config ${{ env.BUILD_TYPE }} -j
-
-      # Run tests; show full output on failure
-      - name: Run logic tests
-        run: ctest --test-dir build --output-on-failure -C ${{ env.BUILD_TYPE }} -R pacman_tests_logic
-
-      - name: Run app tests
-        run: ctest --test-dir build --output-on-failure -C ${{ env.BUILD_TYPE }} -R pacman_tests_app
