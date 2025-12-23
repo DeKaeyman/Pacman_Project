@@ -488,7 +488,7 @@ void World::applyLevelSpeedBoost() {
         }
 
         if (auto pac = dynamic_cast<PacMan*>(e.get())) {
-            pac->setSpeed(pac->baseSpeed() * (1/factor));
+            pac->setSpeed(pac->baseSpeed() * (1 / factor));
         } else if (auto g = dynamic_cast<Ghost*>(e.get())) {
             g->setSpeed(g->baseSpeed() * factor);
         }
