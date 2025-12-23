@@ -442,7 +442,9 @@ bool World::checkPacmanDesiredDirection(PacMan& pac, double dt) {
             continue;
         }
 
-        if (intersects(next, wall->bounds(), 0.0003f)) {
+        const double factor = static_cast<float>(1.0 + 0.05 * (currentLevel_ - 1));
+
+        if (intersects(next, wall->bounds(), 0.0003f * factor)) {
             return false;
         }
     }
@@ -478,7 +480,7 @@ void World::advanceLevel() {
  * @brief Applies a level-based speed multiplier to Pac-Man and ghosts.
  */
 void World::applyLevelSpeedBoost() {
-    const double factor = 1.0 + 0.09 * (currentLevel_ - 1);
+    const double factor = 1.0 + 0.05 * (currentLevel_ - 1);
 
     for (auto& e : entities_) {
         if (!e || !e->active) {
@@ -486,7 +488,7 @@ void World::applyLevelSpeedBoost() {
         }
 
         if (auto pac = dynamic_cast<PacMan*>(e.get())) {
-            pac->setSpeed(pac->baseSpeed() * factor);
+            pac->setSpeed(pac->baseSpeed() * (1/factor));
         } else if (auto g = dynamic_cast<Ghost*>(e.get())) {
             g->setSpeed(g->baseSpeed() * factor);
         }
