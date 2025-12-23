@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/DeKaeyman/Pacman_Project/actions/workflows/ci-build.yml/badge.svg)  
 Repo: https://github.com/DeKaeyman/Pacman_Project  
-Gameplay video (±10 min): <GAMEPLAY_VIDEO_URL>
+Gameplay video (±10 min): https://drive.google.com/file/d/1aOeE96neEoxDIqk8BHuXbNrgS7rAq5_l/view?usp=sharing
 
 ## Overzicht
 Deze repository bevat een Pac-Man geïnspireerde game in C++ met SFML. De code is opgesplitst in:

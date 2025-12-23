@@ -2,7 +2,7 @@
 Naam: Adriaan De Kaey  
 Studentnummer: 20243910  
 Repo: https://github.com/DeKaeyman/Pacman_Project  
-Gameplay video (±10 min): <GAMEPLAY_VIDEO_URL>
+Gameplay video (±10 min): https://drive.google.com/file/d/1aOeE96neEoxDIqk8BHuXbNrgS7rAq5_l/view?usp=sharing
 
 ## 1. Architectuur
 ### 1.1 Doelstellingen
